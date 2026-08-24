@@ -4,11 +4,11 @@ import {
   ChevronRight,
   CreditCard,
   MapPin,
-  SlidersHorizontal,
   type LucideIcon,
 } from 'lucide-react-native';
 import {
   SafeAreaView,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Switch,
@@ -16,12 +16,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {CoffeePreferencesDropdown} from '../components/profile/CoffeePreferencesDropdown';
 import {colors, spacing} from '../theme';
 
 const menuItems: {Icon: LucideIcon; label: string; value: string}[] = [
   {Icon: MapPin, label: 'Delivery address', value: 'Home'},
   {Icon: CreditCard, label: 'Payment method', value: '•• 2048'},
-  {Icon: SlidersHorizontal, label: 'Coffee preferences', value: 'Medium roast'},
 ];
 
 export const ProfileScreen = () => {
@@ -31,60 +31,65 @@ export const ProfileScreen = () => {
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <Text style={styles.eyebrow}>YOUR SPACE</Text>
-          <Text style={styles.title}>Profile</Text>
-        </View>
-        <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>FW</Text>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.header}>
+            <Text style={styles.eyebrow}>YOUR SPACE</Text>
+            <Text style={styles.title}>Profile</Text>
           </View>
-          <View style={styles.profileCopy}>
-            <Text style={styles.name}>Coffee Lover</Text>
-            <Text style={styles.member}>GOLD MEMBER · 1,240 BEANS</Text>
-          </View>
-          <ChevronRight color={colors.gold} size={22} strokeWidth={1.8} />
-        </View>
-
-        <View style={styles.menu}>
-          {menuItems.map(item => {
-            const Icon = item.Icon;
-            return (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                key={item.label}
-                style={styles.menuRow}>
-                <View style={styles.menuIcon}>
-                  <Icon color={colors.goldSoft} size={16} strokeWidth={1.7} />
-                </View>
-                <Text style={styles.menuLabel}>{item.label}</Text>
-                <Text style={styles.menuValue}>{item.value}</Text>
-                <ChevronRight
-                  color={colors.muted}
-                  size={17}
-                  strokeWidth={1.7}
-                />
-              </TouchableOpacity>
-            );
-          })}
-          <View style={styles.menuRow}>
-            <View style={styles.menuIcon}>
-              <Bell color={colors.goldSoft} size={16} strokeWidth={1.7} />
+          <View style={styles.profileCard}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>FW</Text>
             </View>
-            <Text style={styles.menuLabel}>Order notifications</Text>
-            <Switch
-              accessibilityLabel="Order notifications"
-              onValueChange={setNotifications}
-              thumbColor={notifications ? colors.background : colors.muted}
-              trackColor={{false: colors.elevated, true: colors.gold}}
-              value={notifications}
-            />
+            <View style={styles.profileCopy}>
+              <Text style={styles.name}>Coffee Lover</Text>
+              <Text style={styles.member}>GOLD MEMBER · 1,240 BEANS</Text>
+            </View>
+            <ChevronRight color={colors.gold} size={22} strokeWidth={1.8} />
           </View>
-        </View>
 
-        <Text style={styles.quote}>
-          “Coffee is a quiet luxury, repeated daily.”
-        </Text>
+          <View style={styles.menu}>
+            {menuItems.map(item => {
+              const Icon = item.Icon;
+              return (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  key={item.label}
+                  style={styles.menuRow}>
+                  <View style={styles.menuIcon}>
+                    <Icon color={colors.goldSoft} size={16} strokeWidth={1.7} />
+                  </View>
+                  <Text style={styles.menuLabel}>{item.label}</Text>
+                  <Text style={styles.menuValue}>{item.value}</Text>
+                  <ChevronRight
+                    color={colors.muted}
+                    size={17}
+                    strokeWidth={1.7}
+                  />
+                </TouchableOpacity>
+              );
+            })}
+            <CoffeePreferencesDropdown />
+            <View style={styles.menuRow}>
+              <View style={styles.menuIcon}>
+                <Bell color={colors.goldSoft} size={16} strokeWidth={1.7} />
+              </View>
+              <Text style={styles.menuLabel}>Order notifications</Text>
+              <Switch
+                accessibilityLabel="Order notifications"
+                onValueChange={setNotifications}
+                thumbColor={notifications ? colors.background : colors.muted}
+                trackColor={{false: colors.elevated, true: colors.gold}}
+                value={notifications}
+              />
+            </View>
+          </View>
+
+          <Text style={styles.quote}>
+            “Coffee is a quiet luxury, repeated daily.”
+          </Text>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
@@ -93,6 +98,7 @@ export const ProfileScreen = () => {
 const styles = StyleSheet.create({
   screen: {flex: 1, backgroundColor: colors.background},
   safeArea: {flex: 1},
+  content: {paddingBottom: 30},
   header: {
     paddingHorizontal: spacing.screen,
     paddingTop: 12,
@@ -168,10 +174,8 @@ const styles = StyleSheet.create({
   },
   menuValue: {fontSize: 9, color: colors.muted},
   quote: {
-    position: 'absolute',
-    bottom: 28,
-    left: 30,
-    right: 30,
+    marginHorizontal: 30,
+    marginTop: 30,
     textAlign: 'center',
     fontSize: 10,
     fontStyle: 'italic',
