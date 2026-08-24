@@ -1,0 +1,15 @@
+diff --git a/node_modules/@react-native-community/cli-plugin-metro/build/launchPackager.command b/node_modules/@react-native-community/cli-plugin-metro/build/launchPackager.command
+index 5fb23c5..55151cf 100755
+--- a/node_modules/@react-native-community/cli-plugin-metro/build/launchPackager.command
++++ b/node_modules/@react-native-community/cli-plugin-metro/build/launchPackager.command
+@@ -1,8 +1,8 @@
+ THIS_DIR=$(cd -P "$(dirname "$(readlink "${BASH_SOURCE[0]}" || echo "${BASH_SOURCE[0]}")")" && pwd)
+ 
+ source "$THIS_DIR/.packager.env"
+-cd $PROJECT_ROOT
+-$REACT_NATIVE_PATH/cli.js start
++cd "$PROJECT_ROOT"
++"$REACT_NATIVE_PATH/cli.js" start
+ 
+ if [[ -z "$CI" ]]; then
+   echo "Process terminated. Press <enter> to close the window"

@@ -1,0 +1,13 @@
+diff --git a/node_modules/@react-native-community/cli-platform-android/build/commands/buildAndroid/startServerInNewWindow.js b/node_modules/@react-native-community/cli-platform-android/build/commands/buildAndroid/startServerInNewWindow.js
+index 5fa0362..a732872 100644
+--- a/node_modules/@react-native-community/cli-platform-android/build/commands/buildAndroid/startServerInNewWindow.js
++++ b/node_modules/@react-native-community/cli-platform-android/build/commands/buildAndroid/startServerInNewWindow.js
+@@ -40,7 +40,7 @@ function startServerInNewWindow(port, terminal, projectRoot, reactNativePath) {
+   const isWindows = /^win/.test(process.platform);
+   const scriptFile = isWindows ? 'launchPackager.bat' : 'launchPackager.command';
+   const packagerEnvFilename = isWindows ? '.packager.bat' : '.packager.env';
+-  const packagerEnvFileExportContent = isWindows ? `set RCT_METRO_PORT=${port}\nset PROJECT_ROOT=${projectRoot}\nset REACT_NATIVE_PATH=${reactNativePath}` : `export RCT_METRO_PORT=${port}\nexport PROJECT_ROOT=${projectRoot}\nexport REACT_NATIVE_PATH=${reactNativePath}`;
++  const packagerEnvFileExportContent = isWindows ? `set RCT_METRO_PORT=${port}\nset PROJECT_ROOT=${projectRoot}\nset REACT_NATIVE_PATH=${reactNativePath}` : `export RCT_METRO_PORT=${port}\nexport PROJECT_ROOT="${projectRoot}"\nexport REACT_NATIVE_PATH="${reactNativePath}"`;
+   const nodeModulesPath = (0, _cliTools().resolveNodeModuleDir)(projectRoot, '.bin');
+   const cliPluginMetroPath = _path().default.join(_path().default.dirname(require.resolve('@react-native-community/cli-plugin-metro/package.json')), 'build');
+ 
