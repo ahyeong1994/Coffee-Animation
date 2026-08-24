@@ -1,6 +1,6 @@
 import React from 'react';
 import {Plus, Star} from 'lucide-react-native';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Animated, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {colors} from '../../theme';
 import {Coffee} from '../../types/app';
 import {Point} from '../../hooks/useCartFlightAnimation';
@@ -8,9 +8,10 @@ import {Point} from '../../hooks/useCartFlightAnimation';
 type Props = {
   coffee: Coffee;
   onAdd: (origin: Point) => void;
+  visualParallaxY?: Animated.AnimatedInterpolation<number>;
 };
 
-export const CoffeeCard = ({coffee, onAdd}: Props) => {
+export const CoffeeCard = ({coffee, onAdd, visualParallaxY}: Props) => {
   const addButtonRef =
     React.useRef<React.ElementRef<typeof TouchableOpacity>>(null);
 
@@ -23,9 +24,17 @@ export const CoffeeCard = ({coffee, onAdd}: Props) => {
   return (
     <View style={styles.card}>
       <View style={[styles.visual, {backgroundColor: coffee.accent}]}>
-        <View style={styles.halo} />
-        <Text style={styles.symbol}>{coffee.symbol}</Text>
-        <Text style={styles.origin}>{coffee.origin.toUpperCase()}</Text>
+        <Animated.View
+          style={[
+            styles.visualContent,
+            visualParallaxY
+              ? {transform: [{translateY: visualParallaxY}]}
+              : undefined,
+          ]}>
+          <View style={styles.halo} />
+          <Text style={styles.symbol}>{coffee.symbol}</Text>
+          <Text style={styles.origin}>{coffee.origin.toUpperCase()}</Text>
+        </Animated.View>
       </View>
       <View style={styles.copy}>
         <View>
@@ -71,6 +80,9 @@ const styles = StyleSheet.create({
     width: '41%',
     borderRadius: 18,
     overflow: 'hidden',
+  },
+  visualContent: {
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
   },

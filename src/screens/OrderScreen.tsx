@@ -3,7 +3,6 @@ import {Search, ShoppingCart, X} from 'lucide-react-native';
 import {
   Animated,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -28,6 +27,8 @@ type Props = {
 export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
   const [category, setCategory] = useState('All');
   const [query, setQuery] = useState('');
+  const [viewportHeight, setViewportHeight] = useState(0);
+  const scrollY = useRef(new Animated.Value(0)).current;
   const cartButtonRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null);
   const {cartScale, flight, launch, progress} = useCartFlightAnimation();
 
@@ -56,9 +57,18 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView
-          contentContainerStyle={styles.content}
+        <Animated.ScrollView
+          contentContainerStyle={[
+            styles.content,
+            {paddingBottom: Math.max(160, viewportHeight * 0.4)},
+          ]}
           keyboardShouldPersistTaps="handled"
+          onLayout={event => setViewportHeight(event.nativeEvent.layout.height)}
+          onScroll={Animated.event(
+            [{nativeEvent: {contentOffset: {y: scrollY}}}],
+            {useNativeDriver: true},
+          )}
+          scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <View>
@@ -110,12 +120,14 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
               index={index}
               key={`${category}-${coffee.id}`}
               onAdd={origin => handleCoffeeAdd(coffee, origin)}
+              scrollY={scrollY}
+              viewportHeight={viewportHeight}
             />
           ))}
           {filteredCoffees.length === 0 ? (
             <Text style={styles.noResults}>No coffee matches your search.</Text>
           ) : null}
-        </ScrollView>
+        </Animated.ScrollView>
         <Animated.View
           style={[
             styles.cartButtonContainer,
@@ -148,7 +160,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.screen,
     paddingTop: 12,
-    paddingBottom: 24,
   },
   header: {
     flexDirection: 'row',
