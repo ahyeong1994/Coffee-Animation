@@ -1,17 +1,17 @@
 import React from 'react';
-import {ArrowRight, Coffee} from 'lucide-react-native';
+import {Coffee} from 'lucide-react-native';
 import {
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
+import {SlideToOrder} from '../components/cart/SlideToOrder';
+import {SwipeableCartItem} from '../components/cart/SwipeableCartItem';
 import {EmptyState} from '../components/common/EmptyState';
 import {QuantityControl} from '../components/common/QuantityControl';
-import {SwipeableCartItem} from '../components/cart/SwipeableCartItem';
 import {colors, spacing} from '../theme';
 import {CartLine} from '../types/app';
 
@@ -110,18 +110,7 @@ export const CartScreen = ({
                   ${(subtotal + deliveryFee).toFixed(2)}
                 </Text>
               </View>
-              <TouchableOpacity
-                accessibilityLabel="Checkout order"
-                accessibilityRole="button"
-                onPress={onCheckout}
-                style={styles.checkout}>
-                <Text style={styles.checkoutText}>Place order</Text>
-                <ArrowRight
-                  color={colors.background}
-                  size={20}
-                  strokeWidth={2.3}
-                />
-              </TouchableOpacity>
+              <SlideToOrder onComplete={onCheckout} />
             </View>
           </>
         )}
@@ -197,15 +186,4 @@ const styles = StyleSheet.create({
   },
   totalLabel: {fontSize: 15, fontWeight: '800', color: colors.text},
   total: {fontSize: 20, fontWeight: '900', color: colors.goldSoft},
-  checkout: {
-    height: 54,
-    borderRadius: 18,
-    backgroundColor: colors.gold,
-    paddingHorizontal: 19,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 7,
-  },
-  checkoutText: {fontSize: 13, fontWeight: '900', color: colors.background},
 });

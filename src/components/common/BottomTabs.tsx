@@ -44,12 +44,18 @@ export const BottomTabs = ({activeTab, cartCount, onChange}: Props) => (
             key={tab.id}
             onPress={() => onChange(tab.id)}
             style={styles.tab}>
-            <View style={[styles.iconWrap, active && styles.activeIconWrap]}>
-              <Icon
-                color={active ? colors.background : colors.muted}
-                size={18}
-                strokeWidth={active ? 2.3 : 1.7}
-              />
+            <View style={styles.iconWrap}>
+              <View
+                style={[styles.iconFrame, active && styles.activeIconFrame]}>
+                <View
+                  style={[styles.iconInner, active && styles.activeIconInner]}>
+                  <Icon
+                    color={active ? colors.background : colors.muted}
+                    size={18}
+                    strokeWidth={active ? 2.3 : 1.7}
+                  />
+                </View>
+              </View>
               {tab.id === 'cart' && cartCount > 0 ? (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{cartCount}</Text>
@@ -79,11 +85,26 @@ const styles = StyleSheet.create({
   iconWrap: {
     width: 36,
     height: 30,
-    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  activeIconWrap: {backgroundColor: colors.gold},
+  iconFrame: {
+    width: 36,
+    height: 30,
+    borderRadius: 15,
+    padding: 1,
+    backgroundColor: colors.border,
+  },
+  activeIconFrame: {backgroundColor: colors.goldSoft},
+  iconInner: {
+    flex: 1,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  activeIconInner: {backgroundColor: colors.gold},
   label: {fontSize: 9, fontWeight: '700', color: colors.muted, marginTop: 3},
   activeLabel: {color: colors.goldSoft},
   badge: {

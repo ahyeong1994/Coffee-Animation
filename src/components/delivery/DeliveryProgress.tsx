@@ -1,45 +1,40 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Bike} from 'lucide-react-native';
-import {Animated, Easing, StyleSheet, Text, View} from 'react-native';
+import {
+  Animated,
+  Easing,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {colors} from '../../theme';
 import {Delivery} from '../../types/app';
 
-type Props = {status: Delivery['status']};
+type Props = {
+  status: Delivery['status'];
+  onChangeStatus: (status: Delivery['status']) => void;
+};
 
 const steps = ['Confirmed', 'Brewing', 'Arriving'];
 
-export const DeliveryProgress = ({status}: Props) => {
+export const DeliveryProgress = ({status, onChangeStatus}: Props) => {
   const [trackWidth, setTrackWidth] = useState(0);
   const travel = useRef(new Animated.Value(0)).current;
   const bounce = useRef(new Animated.Value(0)).current;
   const active = status !== 'Delivered';
-  const completeSteps =
-    status === 'Preparing' ? 1 : status === 'On the way' ? 2 : 3;
+  const completeSteps = status === 'Brewing' ? 2 : 3;
 
   useEffect(() => {
-    travel.setValue(status === 'Delivered' ? 1 : 0);
+    travel.stopAnimation();
+    bounce.stopAnimation();
+    travel.setValue(status === 'Brewing' ? 0 : 1);
     bounce.setValue(0);
 
     if (!active) {
       return;
     }
 
-    const travelLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(travel, {
-          toValue: 1,
-          duration: status === 'Preparing' ? 2100 : 2600,
-          easing: Easing.inOut(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.delay(300),
-        Animated.timing(travel, {
-          toValue: 0,
-          duration: 0,
-          useNativeDriver: true,
-        }),
-      ]),
-    );
     const bounceLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(bounce, {
@@ -57,21 +52,37 @@ export const DeliveryProgress = ({status}: Props) => {
       ]),
     );
 
-    travelLoop.start();
     bounceLoop.start();
+    const drive =
+      status === 'Arriving'
+        ? Animated.timing(travel, {
+            toValue: 1,
+            duration: 1250,
+            easing: Easing.inOut(Easing.cubic),
+            useNativeDriver: true,
+          })
+        : null;
+    if (drive) {
+      travel.setValue(0);
+      drive.start(({finished}) => {
+        if (finished) {
+          bounceLoop.stop();
+          bounce.setValue(0);
+        }
+      });
+    }
+
     return () => {
-      travelLoop.stop();
+      drive?.stop();
       bounceLoop.stop();
     };
   }, [active, bounce, status, travel]);
 
   const firstStop = Math.max(0, trackWidth / 2 - 5);
   const finalStop = Math.max(0, trackWidth - 10);
-  const start = status === 'Preparing' ? 0 : firstStop;
-  const end = status === 'Preparing' ? firstStop : finalStop;
   const translateX = travel.interpolate({
     inputRange: [0, 1],
-    outputRange: [start, end],
+    outputRange: [firstStop, finalStop],
   });
   const translateY = bounce.interpolate({
     inputRange: [0, 1],
@@ -81,13 +92,6 @@ export const DeliveryProgress = ({status}: Props) => {
     inputRange: [0, 1],
     outputRange: ['-2deg', '2deg'],
   });
-  const opacity = active
-    ? travel.interpolate({
-        inputRange: [0, 0.06, 0.9, 1],
-        outputRange: [0.45, 1, 1, 0.2],
-      })
-    : 1;
-
   return (
     <View
       accessibilityLabel={`Delivery progress: ${status}`}
@@ -100,7 +104,6 @@ export const DeliveryProgress = ({status}: Props) => {
               styles.vehicle,
               !active && styles.deliveredVehicle,
               {
-                opacity,
                 transform: [{translateX}, {translateY}, {rotate}],
               },
             ]}>
@@ -130,16 +133,45 @@ export const DeliveryProgress = ({status}: Props) => {
         ))}
       </View>
       <View style={styles.timelineLabels}>
-        {steps.map((label, step) => (
+        <Text style={[styles.timelineLabel, styles.completeLabel]}>
+          Confirmed
+        </Text>
+        <TouchableOpacity
+          accessibilityLabel="Set delivery status to Brewing"
+          accessibilityRole="button"
+          accessibilityState={{selected: status === 'Brewing'}}
+          disabled={!active}
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+          onPress={() => onChangeStatus('Brewing')}>
           <Text
-            key={label}
             style={[
               styles.timelineLabel,
-              step < completeSteps && styles.completeLabel,
+              status === 'Brewing' && styles.selectedLabel,
             ]}>
-            {status === 'Delivered' && step === 2 ? 'Delivered' : label}
+            Brewing
           </Text>
-        ))}
+        </TouchableOpacity>
+        <TouchableOpacity
+          accessibilityLabel={
+            status === 'Arriving'
+              ? 'Mark delivery as Delivered'
+              : 'Set delivery status to Arriving'
+          }
+          accessibilityRole="button"
+          accessibilityState={{selected: status === 'Arriving'}}
+          disabled={!active}
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+          onPress={() =>
+            onChangeStatus(status === 'Arriving' ? 'Delivered' : 'Arriving')
+          }>
+          <Text
+            style={[
+              styles.timelineLabel,
+              status !== 'Brewing' && styles.selectedLabel,
+            ]}>
+            {status === 'Delivered' ? 'Delivered' : 'Arriving'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -185,4 +217,5 @@ const styles = StyleSheet.create({
   },
   timelineLabel: {fontSize: 8, color: colors.muted},
   completeLabel: {color: colors.goldSoft},
+  selectedLabel: {color: colors.goldSoft, fontWeight: '900'},
 });

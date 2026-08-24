@@ -20,7 +20,7 @@ export type CartLine = {
 export type Delivery = {
   id: string;
   title: string;
-  status: 'Preparing' | 'On the way' | 'Delivered';
+  status: 'Brewing' | 'Arriving' | 'Delivered';
   eta: string;
   address: string;
 };

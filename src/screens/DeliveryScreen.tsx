@@ -13,9 +13,12 @@ import {DeliveryProgress} from '../components/delivery/DeliveryProgress';
 import {colors, spacing} from '../theme';
 import {Delivery} from '../types/app';
 
-type Props = {deliveries: Delivery[]};
+type Props = {
+  deliveries: Delivery[];
+  onChangeStatus: (deliveryId: string, status: Delivery['status']) => void;
+};
 
-export const DeliveryScreen = ({deliveries}: Props) => (
+export const DeliveryScreen = ({deliveries, onChangeStatus}: Props) => (
   <View style={styles.screen}>
     <StatusBar barStyle="light-content" backgroundColor={colors.background} />
     <SafeAreaView style={styles.safeArea}>
@@ -51,7 +54,10 @@ export const DeliveryScreen = ({deliveries}: Props) => (
                 </View>
                 <Text style={styles.deliveryTitle}>{delivery.title}</Text>
                 <Text style={styles.address}>{delivery.address}</Text>
-                <DeliveryProgress status={delivery.status} />
+                <DeliveryProgress
+                  onChangeStatus={status => onChangeStatus(delivery.id, status)}
+                  status={delivery.status}
+                />
                 <Text style={styles.eta}>
                   {index === 0 && active ? `ETA ${delivery.eta}` : delivery.eta}
                 </Text>

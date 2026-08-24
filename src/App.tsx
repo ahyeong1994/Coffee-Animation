@@ -61,13 +61,24 @@ const App = (): JSX.Element => {
     const newDelivery: Delivery = {
       id: `CF-${String(Date.now()).slice(-4)}`,
       title: `${itemCount} ${itemCount === 1 ? 'coffee' : 'coffees'}`,
-      status: 'On the way',
+      status: 'Brewing',
       eta: '12–18 min',
       address: 'Home · Kuala Lumpur',
     };
     setDeliveries(current => [newDelivery, ...current]);
     setCart([]);
     setActiveTab('delivery');
+  };
+
+  const changeDeliveryStatus = (
+    deliveryId: string,
+    status: Delivery['status'],
+  ) => {
+    setDeliveries(current =>
+      current.map(delivery =>
+        delivery.id === deliveryId ? {...delivery, status} : delivery,
+      ),
+    );
   };
 
   const cartCount = cart.reduce((total, line) => total + line.quantity, 0);
@@ -85,7 +96,12 @@ const App = (): JSX.Element => {
           />
         );
       case 'delivery':
-        return <DeliveryScreen deliveries={deliveries} />;
+        return (
+          <DeliveryScreen
+            deliveries={deliveries}
+            onChangeStatus={changeDeliveryStatus}
+          />
+        );
       case 'profile':
         return <ProfileScreen />;
       case 'order':

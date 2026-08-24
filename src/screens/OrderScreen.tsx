@@ -1,5 +1,5 @@
 import React, {useMemo, useRef, useState} from 'react';
-import {Search, ShoppingCart} from 'lucide-react-native';
+import {Search, ShoppingCart, X} from 'lucide-react-native';
 import {
   Animated,
   SafeAreaView,
@@ -11,7 +11,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {CoffeeCard} from '../components/coffee/CoffeeCard';
+import {AnimatedCoffeeCard} from '../components/coffee/AnimatedCoffeeCard';
+import {CoffeeCategorySelector} from '../components/coffee/CoffeeCategorySelector';
 import {FlyingCoffee} from '../components/coffee/FlyingCoffee';
 import {coffeeCategories, coffees} from '../data/coffee';
 import {Point, useCartFlightAnimation} from '../hooks/useCartFlightAnimation';
@@ -77,42 +78,37 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
               style={styles.search}
               value={query}
             />
+            {query.length > 0 ? (
+              <TouchableOpacity
+                accessibilityLabel="Clear coffee search"
+                accessibilityRole="button"
+                activeOpacity={0.65}
+                hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+                onPress={() => setQuery('')}
+                style={styles.clearSearch}>
+                <X color={colors.muted} size={18} strokeWidth={2} />
+              </TouchableOpacity>
+            ) : null}
           </View>
 
-          <ScrollView
-            contentContainerStyle={styles.categories}
-            horizontal
-            showsHorizontalScrollIndicator={false}>
-            {coffeeCategories.map(item => {
-              const active = category === item;
-              return (
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  key={item}
-                  onPress={() => setCategory(item)}
-                  style={[styles.category, active && styles.activeCategory]}>
-                  <Text
-                    style={[
-                      styles.categoryText,
-                      active && styles.activeCategoryText,
-                    ]}>
-                    {item}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
+          <CoffeeCategorySelector
+            categories={coffeeCategories}
+            onChange={setCategory}
+            value={category}
+          />
 
           <View style={styles.listHeader}>
             <Text style={styles.listTitle}>Our coffee</Text>
             <Text style={styles.count}>
-              {filteredCoffees.length} selections
+              {filteredCoffees.length}{' '}
+              {filteredCoffees.length === 1 ? 'selection' : 'selections'}
             </Text>
           </View>
-          {filteredCoffees.map(coffee => (
-            <CoffeeCard
+          {filteredCoffees.map((coffee, index) => (
+            <AnimatedCoffeeCard
               coffee={coffee}
-              key={coffee.id}
+              index={index}
+              key={`${category}-${coffee.id}`}
               onAdd={origin => handleCoffeeAdd(coffee, origin)}
             />
           ))}
@@ -224,19 +220,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.text,
   },
-  categories: {paddingVertical: 18},
-  category: {
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 17,
+  clearSearch: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.elevated,
+    alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
   },
-  activeCategory: {backgroundColor: colors.gold, borderColor: colors.gold},
-  categoryText: {fontSize: 10, fontWeight: '800', color: colors.muted},
-  activeCategoryText: {color: colors.background},
   listHeader: {
     flexDirection: 'row',
     alignItems: 'flex-end',
