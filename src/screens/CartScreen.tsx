@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import {HoldToOrder} from '../components/cart/HoldToOrder';
 import {SlideToOrder} from '../components/cart/SlideToOrder';
 import {SwipeableCartItem} from '../components/cart/SwipeableCartItem';
 import {EmptyState} from '../components/common/EmptyState';
@@ -111,6 +112,12 @@ export const CartScreen = ({
                 </Text>
               </View>
               <SlideToOrder onComplete={onCheckout} />
+              <View style={styles.checkoutDivider}>
+                <View style={styles.checkoutDividerLine} />
+                <Text style={styles.checkoutDividerText}>OR</Text>
+                <View style={styles.checkoutDividerLine} />
+              </View>
+              <HoldToOrder onComplete={onCheckout} />
             </View>
           </>
         )}
@@ -186,4 +193,18 @@ const styles = StyleSheet.create({
   },
   totalLabel: {fontSize: 15, fontWeight: '800', color: colors.text},
   total: {fontSize: 20, fontWeight: '900', color: colors.goldSoft},
+  checkoutDivider: {
+    height: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+  },
+  checkoutDividerLine: {flex: 1, height: 1, backgroundColor: colors.border},
+  checkoutDividerText: {
+    marginHorizontal: 10,
+    fontSize: 8,
+    fontWeight: '900',
+    letterSpacing: 1.4,
+    color: colors.muted,
+  },
 });
