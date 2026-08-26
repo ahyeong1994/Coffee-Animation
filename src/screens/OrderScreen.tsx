@@ -1,17 +1,19 @@
 import React, {useMemo, useRef, useState} from 'react';
-import {Search, ShoppingCart, X} from 'lucide-react-native';
+import {ShoppingCart} from 'lucide-react-native';
 import {
   Animated,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import {AnimatedCoffeeCard} from '../components/coffee/AnimatedCoffeeCard';
 import {CoffeeCategorySelector} from '../components/coffee/CoffeeCategorySelector';
+import {CoffeeSearchField} from '../components/coffee/CoffeeSearchField';
 import {FlyingCoffee} from '../components/coffee/FlyingCoffee';
 import {coffeeCategories, coffees} from '../data/coffee';
 import {Point, useCartFlightAnimation} from '../hooks/useCartFlightAnimation';
@@ -28,7 +30,9 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
   const [category, setCategory] = useState('All');
   const [query, setQuery] = useState('');
   const [viewportHeight, setViewportHeight] = useState(0);
+  const [stickySearchVisible, setStickySearchVisible] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const stickySearchVisibleRef = useRef(false);
   const cartButtonRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null);
   const {cartScale, flight, launch, progress} = useCartFlightAnimation();
 
@@ -53,6 +57,32 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
     });
   };
 
+  const handleScrollState = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    const visible = event.nativeEvent.contentOffset.y >= 105;
+    if (visible !== stickySearchVisibleRef.current) {
+      stickySearchVisibleRef.current = visible;
+      setStickySearchVisible(visible);
+    }
+  };
+
+  const stickySearchOpacity = scrollY.interpolate({
+    inputRange: [78, 118],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+  const stickySearchTranslateY = scrollY.interpolate({
+    inputRange: [78, 118],
+    outputRange: [-9, 0],
+    extrapolate: 'clamp',
+  });
+  const fullSearchOpacity = scrollY.interpolate({
+    inputRange: [58, 100],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
@@ -66,7 +96,7 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
           onLayout={event => setViewportHeight(event.nativeEvent.layout.height)}
           onScroll={Animated.event(
             [{nativeEvent: {contentOffset: {y: scrollY}}}],
-            {useNativeDriver: true},
+            {listener: handleScrollState, useNativeDriver: true},
           )}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}>
@@ -77,29 +107,15 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
             </View>
           </View>
 
-          <View style={styles.searchWrap}>
-            <Search color={colors.gold} size={20} strokeWidth={1.8} />
-            <TextInput
-              accessibilityLabel="Search coffee"
+          <Animated.View
+            pointerEvents={stickySearchVisible ? 'none' : 'auto'}
+            style={[styles.fullSearch, {opacity: fullSearchOpacity}]}>
+            <CoffeeSearchField
+              hiddenFromAccessibility={stickySearchVisible}
               onChangeText={setQuery}
-              placeholder="Search coffee or origin"
-              placeholderTextColor={colors.muted}
-              selectionColor={colors.gold}
-              style={styles.search}
               value={query}
             />
-            {query.length > 0 ? (
-              <TouchableOpacity
-                accessibilityLabel="Clear coffee search"
-                accessibilityRole="button"
-                activeOpacity={0.65}
-                hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
-                onPress={() => setQuery('')}
-                style={styles.clearSearch}>
-                <X color={colors.muted} size={18} strokeWidth={2} />
-              </TouchableOpacity>
-            ) : null}
-          </View>
+          </Animated.View>
 
           <CoffeeCategorySelector
             categories={coffeeCategories}
@@ -128,6 +144,22 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
             <Text style={styles.noResults}>No coffee matches your search.</Text>
           ) : null}
         </Animated.ScrollView>
+        <Animated.View
+          pointerEvents={stickySearchVisible ? 'auto' : 'none'}
+          style={[
+            styles.stickySearch,
+            {
+              opacity: stickySearchOpacity,
+              transform: [{translateY: stickySearchTranslateY}],
+            },
+          ]}>
+          <CoffeeSearchField
+            compact
+            hiddenFromAccessibility={!stickySearchVisible}
+            onChangeText={setQuery}
+            value={query}
+          />
+        </Animated.View>
         <Animated.View
           style={[
             styles.cartButtonContainer,
@@ -212,32 +244,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cartBadgeText: {fontSize: 9, fontWeight: '900', color: colors.white},
-  searchWrap: {
-    height: 52,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 26,
-    paddingHorizontal: 16,
-  },
-  search: {
-    flex: 1,
-    height: 52,
-    padding: 0,
-    paddingLeft: 10,
-    fontSize: 12,
-    color: colors.text,
-  },
-  clearSearch: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: colors.elevated,
-    alignItems: 'center',
-    justifyContent: 'center',
+  fullSearch: {marginTop: 26},
+  stickySearch: {
+    position: 'absolute',
+    top: 12,
+    left: spacing.screen,
+    right: spacing.screen + 54,
+    zIndex: 19,
+    elevation: 7,
   },
   listHeader: {
     flexDirection: 'row',
