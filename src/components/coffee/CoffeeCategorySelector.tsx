@@ -68,6 +68,7 @@ const CategoryTab = ({active, label, onPress}: TabProps) => {
   );
 };
 
+/** Displays animated category tabs with a shared sliding selection indicator. */
 export const CoffeeCategorySelector = ({
   categories,
   onChange,

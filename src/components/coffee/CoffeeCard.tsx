@@ -3,7 +3,7 @@ import {Plus, Star} from 'lucide-react-native';
 import {Animated, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {colors} from '../../theme';
 import {Coffee} from '../../types/app';
-import {Point} from '../../hooks/useCartFlightAnimation';
+import {Point} from '../../animations/cart/useCartFlightAnimation';
 
 type Props = {
   coffee: Coffee;

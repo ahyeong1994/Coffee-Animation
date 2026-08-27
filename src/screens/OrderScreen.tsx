@@ -1,9 +1,7 @@
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {ShoppingCart} from 'lucide-react-native';
 import {
   Animated,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -11,12 +9,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {Point, useCartFlightAnimation} from '../animations/cart';
+import {useStickySearchAnimation} from '../animations/coffee';
 import {AnimatedCoffeeCard} from '../components/coffee/AnimatedCoffeeCard';
 import {CoffeeCategorySelector} from '../components/coffee/CoffeeCategorySelector';
 import {CoffeeSearchField} from '../components/coffee/CoffeeSearchField';
 import {FlyingCoffee} from '../components/coffee/FlyingCoffee';
-import {coffeeCategories, coffees} from '../data/coffee';
-import {Point, useCartFlightAnimation} from '../hooks/useCartFlightAnimation';
+import {coffeeCategories} from '../data/coffee';
+import {useCoffeeCatalog} from '../hooks/useCoffeeCatalog';
 import {colors, spacing} from '../theme';
 import {Coffee} from '../types/app';
 
@@ -26,29 +26,13 @@ type Props = {
   onOpenCart: () => void;
 };
 
+/** Displays the searchable catalog and coordinates add-to-cart animations. */
 export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
-  const [category, setCategory] = useState('All');
-  const [query, setQuery] = useState('');
   const [viewportHeight, setViewportHeight] = useState(0);
-  const [stickySearchVisible, setStickySearchVisible] = useState(false);
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const stickySearchVisibleRef = useRef(false);
   const cartButtonRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null);
+  const catalog = useCoffeeCatalog();
+  const stickySearch = useStickySearchAnimation();
   const {cartScale, flight, launch, progress} = useCartFlightAnimation();
-
-  const filteredCoffees = useMemo(
-    () =>
-      coffees.filter(coffee => {
-        const matchesCategory =
-          category === 'All' || coffee.category === category;
-        const searchable =
-          `${coffee.name} ${coffee.subtitle} ${coffee.origin}`.toLowerCase();
-        return (
-          matchesCategory && searchable.includes(query.trim().toLowerCase())
-        );
-      }),
-    [category, query],
-  );
 
   const handleCoffeeAdd = (coffee: Coffee, origin: Point) => {
     onAdd(coffee);
@@ -56,32 +40,6 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
       launch(coffee, origin, {x: x + width / 2, y: y + height / 2});
     });
   };
-
-  const handleScrollState = (
-    event: NativeSyntheticEvent<NativeScrollEvent>,
-  ) => {
-    const visible = event.nativeEvent.contentOffset.y >= 105;
-    if (visible !== stickySearchVisibleRef.current) {
-      stickySearchVisibleRef.current = visible;
-      setStickySearchVisible(visible);
-    }
-  };
-
-  const stickySearchOpacity = scrollY.interpolate({
-    inputRange: [78, 118],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
-  const stickySearchTranslateY = scrollY.interpolate({
-    inputRange: [78, 118],
-    outputRange: [-9, 0],
-    extrapolate: 'clamp',
-  });
-  const fullSearchOpacity = scrollY.interpolate({
-    inputRange: [58, 100],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
 
   return (
     <View style={styles.screen}>
@@ -95,8 +53,8 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
           keyboardShouldPersistTaps="handled"
           onLayout={event => setViewportHeight(event.nativeEvent.layout.height)}
           onScroll={Animated.event(
-            [{nativeEvent: {contentOffset: {y: scrollY}}}],
-            {listener: handleScrollState, useNativeDriver: true},
+            [{nativeEvent: {contentOffset: {y: stickySearch.scrollY}}}],
+            {listener: stickySearch.handleScrollState, useNativeDriver: true},
           )}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}>
@@ -108,56 +66,61 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
           </View>
 
           <Animated.View
-            pointerEvents={stickySearchVisible ? 'none' : 'auto'}
-            style={[styles.fullSearch, {opacity: fullSearchOpacity}]}>
+            pointerEvents={stickySearch.stickySearchVisible ? 'none' : 'auto'}
+            style={[
+              styles.fullSearch,
+              {opacity: stickySearch.fullSearchOpacity},
+            ]}>
             <CoffeeSearchField
-              hiddenFromAccessibility={stickySearchVisible}
-              onChangeText={setQuery}
-              value={query}
+              hiddenFromAccessibility={stickySearch.stickySearchVisible}
+              onChangeText={catalog.setQuery}
+              value={catalog.query}
             />
           </Animated.View>
 
           <CoffeeCategorySelector
             categories={coffeeCategories}
-            onChange={setCategory}
-            value={category}
+            onChange={catalog.setCategory}
+            value={catalog.category}
           />
 
           <View style={styles.listHeader}>
             <Text style={styles.listTitle}>Our coffee</Text>
             <Text style={styles.count}>
-              {filteredCoffees.length}{' '}
-              {filteredCoffees.length === 1 ? 'selection' : 'selections'}
+              {catalog.filteredCoffees.length}{' '}
+              {catalog.filteredCoffees.length === 1
+                ? 'selection'
+                : 'selections'}
             </Text>
           </View>
-          {filteredCoffees.map((coffee, index) => (
+          {catalog.filteredCoffees.map((coffee, index) => (
             <AnimatedCoffeeCard
               coffee={coffee}
               index={index}
-              key={`${category}-${coffee.id}`}
+              key={`${catalog.category}-${coffee.id}`}
               onAdd={origin => handleCoffeeAdd(coffee, origin)}
-              scrollY={scrollY}
+              scrollY={stickySearch.scrollY}
               viewportHeight={viewportHeight}
             />
           ))}
-          {filteredCoffees.length === 0 ? (
+          {catalog.filteredCoffees.length === 0 ? (
             <Text style={styles.noResults}>No coffee matches your search.</Text>
           ) : null}
         </Animated.ScrollView>
         <Animated.View
-          pointerEvents={stickySearchVisible ? 'auto' : 'none'}
+          pointerEvents={stickySearch.stickySearchVisible ? 'auto' : 'none'}
           style={[
             styles.stickySearch,
             {
-              opacity: stickySearchOpacity,
-              transform: [{translateY: stickySearchTranslateY}],
+              opacity: stickySearch.stickySearchOpacity,
+              transform: [{translateY: stickySearch.stickySearchTranslateY}],
             },
           ]}>
           <CoffeeSearchField
             compact
-            hiddenFromAccessibility={!stickySearchVisible}
-            onChangeText={setQuery}
-            value={query}
+            hiddenFromAccessibility={!stickySearch.stickySearchVisible}
+            onChangeText={catalog.setQuery}
+            value={catalog.query}
           />
         </Animated.View>
         <Animated.View

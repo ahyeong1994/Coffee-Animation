@@ -1,6 +1,6 @@
 import React from 'react';
 import {Animated, Modal, StyleSheet, Text, View} from 'react-native';
-import {CartFlight} from '../../hooks/useCartFlightAnimation';
+import {CartFlight} from '../../animations/cart/useCartFlightAnimation';
 import {colors} from '../../theme';
 
 type Props = {
@@ -8,6 +8,7 @@ type Props = {
   progress: Animated.Value;
 };
 
+/** Renders the curved visual flight from a coffee card into the cart target. */
 export const FlyingCoffee = ({flight, progress}: Props) => {
   if (!flight) {
     return null;

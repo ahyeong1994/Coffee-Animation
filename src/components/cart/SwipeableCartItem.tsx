@@ -18,6 +18,7 @@ type Props = {
   onRemove: () => void;
 };
 
+/** Reveals a destructive action by clamping a horizontal left swipe. */
 export const SwipeableCartItem = ({
   accessibilityName,
   children,

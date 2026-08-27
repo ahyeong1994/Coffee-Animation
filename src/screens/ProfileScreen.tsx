@@ -26,6 +26,7 @@ const menuItems: {Icon: LucideIcon; label: string; value: string}[] = [
 
 type Props = {onOpenCoffeeCamera: () => void};
 
+/** Renders account settings and opens the Coffee Lover camera experience. */
 export const ProfileScreen = ({onOpenCoffeeCamera}: Props) => {
   const [notifications, setNotifications] = useState(true);
 

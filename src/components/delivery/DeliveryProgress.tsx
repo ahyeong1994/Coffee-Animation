@@ -1,15 +1,9 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useState} from 'react';
 import {Bike} from 'lucide-react-native';
-import {
-  Animated,
-  Easing,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {Animated, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {colors} from '../../theme';
 import {Delivery} from '../../types/app';
+import {useDeliveryVehicleAnimation} from '../../animations/delivery/useDeliveryVehicleAnimation';
 
 type Props = {
   status: Delivery['status'];
@@ -18,80 +12,11 @@ type Props = {
 
 const steps = ['Confirmed', 'Brewing', 'Arriving'];
 
+/** Renders delivery checkpoints and binds them to the vehicle animation hook. */
 export const DeliveryProgress = ({status, onChangeStatus}: Props) => {
   const [trackWidth, setTrackWidth] = useState(0);
-  const travel = useRef(new Animated.Value(0)).current;
-  const bounce = useRef(new Animated.Value(0)).current;
-  const active = status !== 'Delivered';
+  const vehicle = useDeliveryVehicleAnimation(status, trackWidth);
   const completeSteps = status === 'Brewing' ? 2 : 3;
-
-  useEffect(() => {
-    travel.stopAnimation();
-    bounce.stopAnimation();
-    travel.setValue(status === 'Brewing' ? 0 : 1);
-    bounce.setValue(0);
-
-    if (!active) {
-      return;
-    }
-
-    const bounceLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(bounce, {
-          toValue: 1,
-          duration: 220,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(bounce, {
-          toValue: 0,
-          duration: 220,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-
-    bounceLoop.start();
-    const drive =
-      status === 'Arriving'
-        ? Animated.timing(travel, {
-            toValue: 1,
-            duration: 1250,
-            easing: Easing.inOut(Easing.cubic),
-            useNativeDriver: true,
-          })
-        : null;
-    if (drive) {
-      travel.setValue(0);
-      drive.start(({finished}) => {
-        if (finished) {
-          bounceLoop.stop();
-          bounce.setValue(0);
-        }
-      });
-    }
-
-    return () => {
-      drive?.stop();
-      bounceLoop.stop();
-    };
-  }, [active, bounce, status, travel]);
-
-  const firstStop = Math.max(0, trackWidth / 2 - 5);
-  const finalStop = Math.max(0, trackWidth - 10);
-  const translateX = travel.interpolate({
-    inputRange: [0, 1],
-    outputRange: [firstStop, finalStop],
-  });
-  const translateY = bounce.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -3],
-  });
-  const rotate = bounce.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['-2deg', '2deg'],
-  });
   return (
     <View
       accessibilityLabel={`Delivery progress: ${status}`}
@@ -102,13 +27,17 @@ export const DeliveryProgress = ({status, onChangeStatus}: Props) => {
           <Animated.View
             style={[
               styles.vehicle,
-              !active && styles.deliveredVehicle,
+              !vehicle.active && styles.deliveredVehicle,
               {
-                transform: [{translateX}, {translateY}, {rotate}],
+                transform: [
+                  {translateX: vehicle.translateX},
+                  {translateY: vehicle.translateY},
+                  {rotate: vehicle.rotate},
+                ],
               },
             ]}>
             <Bike
-              color={active ? colors.background : colors.goldSoft}
+              color={vehicle.active ? colors.background : colors.goldSoft}
               size={18}
               strokeWidth={2.2}
             />
@@ -140,7 +69,7 @@ export const DeliveryProgress = ({status, onChangeStatus}: Props) => {
           accessibilityLabel="Set delivery status to Brewing"
           accessibilityRole="button"
           accessibilityState={{selected: status === 'Brewing'}}
-          disabled={!active}
+          disabled={!vehicle.active}
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
           onPress={() => onChangeStatus('Brewing')}>
           <Text
@@ -159,7 +88,7 @@ export const DeliveryProgress = ({status, onChangeStatus}: Props) => {
           }
           accessibilityRole="button"
           accessibilityState={{selected: status === 'Arriving'}}
-          disabled={!active}
+          disabled={!vehicle.active}
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
           onPress={() =>
             onChangeStatus(status === 'Arriving' ? 'Delivered' : 'Arriving')

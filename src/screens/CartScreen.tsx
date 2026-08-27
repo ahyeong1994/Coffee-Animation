@@ -24,6 +24,7 @@ type Props = {
   onRemove: (coffeeId: string) => void;
 };
 
+/** Displays editable cart lines and the two experimental checkout controls. */
 export const CartScreen = ({
   lines,
   onBrowse,

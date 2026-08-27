@@ -18,6 +18,7 @@ const preferences = [
 
 const OPTION_HEIGHT = 50;
 
+/** Expands and collapses the profile's selectable coffee preference list. */
 export const CoffeePreferencesDropdown = () => {
   const [expanded, setExpanded] = useState(false);
   const [selected, setSelected] = useState('Medium roast');

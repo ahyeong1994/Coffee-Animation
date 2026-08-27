@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {Animated, Easing} from 'react-native';
-import {Coffee} from '../types/app';
+import {Coffee} from '../../types/app';
 
 export type Point = {x: number; y: number};
 
@@ -10,6 +10,10 @@ export type CartFlight = {
   target: Point;
 };
 
+/**
+ * Animates an item from its source coordinates into the cart and pulses the
+ * target on arrival. Supply any renderable payload by adapting CartFlight.
+ */
 export const useCartFlightAnimation = () => {
   const [flight, setFlight] = useState<CartFlight | null>(null);
   const progress = useRef(new Animated.Value(0)).current;
@@ -32,6 +36,7 @@ export const useCartFlightAnimation = () => {
     ]).start();
   }, [cartScale]);
 
+  /** Starts a new flight and safely cancels a previous unfinished one. */
   const launch = useCallback(
     (coffee: Coffee, start: Point, target: Point) => {
       runningAnimation.current?.stop();

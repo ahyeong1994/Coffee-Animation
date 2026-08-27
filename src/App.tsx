@@ -1,126 +1,61 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Animated, Easing, StyleSheet, View} from 'react-native';
+import React from 'react';
+import {Animated, StyleSheet, View} from 'react-native';
+import {usePageTransitionAnimation} from './animations/navigation/usePageTransitionAnimation';
 import {BottomTabs} from './components/common/BottomTabs';
-import {initialDeliveries} from './data/coffee';
+import {useCoffeeAppState} from './hooks/useCoffeeAppState';
 import {CartScreen} from './screens/CartScreen';
 import {CoffeeCameraScreen} from './screens/CoffeeCameraScreen';
 import {DeliveryScreen} from './screens/DeliveryScreen';
 import {OrderScreen} from './screens/OrderScreen';
 import {ProfileScreen} from './screens/ProfileScreen';
 import {colors} from './theme';
-import {AppTab, CartLine, Coffee, Delivery} from './types/app';
 
+/** Composes the current page while business state remains inside one hook. */
 const App = (): JSX.Element => {
-  const [activeTab, setActiveTab] = useState<AppTab>('order');
-  const [profileCameraOpen, setProfileCameraOpen] = useState(false);
-  const [cart, setCart] = useState<CartLine[]>([]);
-  const [deliveries, setDeliveries] = useState<Delivery[]>(initialDeliveries);
-  const pageProgress = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    pageProgress.setValue(0);
-    Animated.timing(pageProgress, {
-      toValue: 1,
-      duration: 260,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [activeTab, pageProgress, profileCameraOpen]);
-
-  const addToCart = (coffee: Coffee) => {
-    setCart(current => {
-      const existing = current.find(line => line.coffee.id === coffee.id);
-      if (existing) {
-        return current.map(line =>
-          line.coffee.id === coffee.id
-            ? {...line, quantity: line.quantity + 1}
-            : line,
-        );
-      }
-      return [...current, {coffee, quantity: 1}];
-    });
-  };
-
-  const changeQuantity = (coffeeId: string, quantity: number) => {
-    setCart(current =>
-      current.map(line =>
-        line.coffee.id === coffeeId
-          ? {...line, quantity: Math.max(1, Math.min(quantity, 999))}
-          : line,
-      ),
-    );
-  };
-
-  const removeFromCart = (coffeeId: string) => {
-    setCart(current => current.filter(line => line.coffee.id !== coffeeId));
-  };
-
-  const checkout = () => {
-    if (cart.length === 0) {
-      return;
-    }
-    const itemCount = cart.reduce((total, line) => total + line.quantity, 0);
-    const newDelivery: Delivery = {
-      id: `CF-${String(Date.now()).slice(-4)}`,
-      title: `${itemCount} ${itemCount === 1 ? 'coffee' : 'coffees'}`,
-      status: 'Brewing',
-      eta: '12–18 min',
-      address: 'Home · Kuala Lumpur',
-    };
-    setDeliveries(current => [newDelivery, ...current]);
-    setCart([]);
-    setActiveTab('delivery');
-  };
-
-  const changeDeliveryStatus = (
-    deliveryId: string,
-    status: Delivery['status'],
-  ) => {
-    setDeliveries(current =>
-      current.map(delivery =>
-        delivery.id === deliveryId ? {...delivery, status} : delivery,
-      ),
-    );
-  };
-
-  const cartCount = cart.reduce((total, line) => total + line.quantity, 0);
+  const state = useCoffeeAppState();
+  const pageTransition = usePageTransitionAnimation([
+    state.activeTab,
+    state.profileCameraOpen,
+  ]);
 
   const renderScreen = () => {
-    if (profileCameraOpen) {
-      return <CoffeeCameraScreen onBack={() => setProfileCameraOpen(false)} />;
+    if (state.profileCameraOpen) {
+      return (
+        <CoffeeCameraScreen onBack={() => state.setProfileCameraOpen(false)} />
+      );
     }
 
-    switch (activeTab) {
+    switch (state.activeTab) {
       case 'cart':
         return (
           <CartScreen
-            lines={cart}
-            onBrowse={() => setActiveTab('order')}
-            onChangeQuantity={changeQuantity}
-            onCheckout={checkout}
-            onRemove={removeFromCart}
+            lines={state.cart}
+            onBrowse={() => state.setActiveTab('order')}
+            onChangeQuantity={state.changeQuantity}
+            onCheckout={state.checkout}
+            onRemove={state.removeFromCart}
           />
         );
       case 'delivery':
         return (
           <DeliveryScreen
-            deliveries={deliveries}
-            onChangeStatus={changeDeliveryStatus}
+            deliveries={state.deliveries}
+            onChangeStatus={state.changeDeliveryStatus}
           />
         );
       case 'profile':
         return (
           <ProfileScreen
-            onOpenCoffeeCamera={() => setProfileCameraOpen(true)}
+            onOpenCoffeeCamera={() => state.setProfileCameraOpen(true)}
           />
         );
       case 'order':
       default:
         return (
           <OrderScreen
-            cartCount={cartCount}
-            onAdd={addToCart}
-            onOpenCart={() => setActiveTab('cart')}
+            cartCount={state.cartCount}
+            onAdd={state.addToCart}
+            onOpenCart={() => state.setActiveTab('cart')}
           />
         );
     }
@@ -129,30 +64,23 @@ const App = (): JSX.Element => {
   return (
     <View style={styles.root}>
       <Animated.View
-        key={profileCameraOpen ? 'coffee-camera' : activeTab}
+        key={state.profileCameraOpen ? 'coffee-camera' : state.activeTab}
         style={[
           styles.page,
           {
-            opacity: pageProgress,
-            transform: [
-              {
-                translateY: pageProgress.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [10, 0],
-                }),
-              },
-            ],
+            opacity: pageTransition.opacity,
+            transform: [{translateY: pageTransition.translateY}],
           },
         ]}>
         {renderScreen()}
       </Animated.View>
-      {!profileCameraOpen ? (
+      {!state.profileCameraOpen && (
         <BottomTabs
-          activeTab={activeTab}
-          cartCount={cartCount}
-          onChange={setActiveTab}
+          activeTab={state.activeTab}
+          cartCount={state.cartCount}
+          onChange={state.setActiveTab}
         />
-      ) : null}
+      )}
     </View>
   );
 };

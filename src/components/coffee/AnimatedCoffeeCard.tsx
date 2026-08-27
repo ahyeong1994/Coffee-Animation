@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Animated, LayoutChangeEvent, StyleSheet} from 'react-native';
-import {Point} from '../../hooks/useCartFlightAnimation';
+import {Point} from '../../animations/cart/useCartFlightAnimation';
 import {colors} from '../../theme';
 import {Coffee} from '../../types/app';
 import {CoffeeCard} from './CoffeeCard';
@@ -15,6 +15,7 @@ type Props = {
 
 type CardLayout = {height: number; y: number};
 
+/** Adds entry, parallax, focus, and perspective motion around a coffee card. */
 export const AnimatedCoffeeCard = ({
   coffee,
   index,

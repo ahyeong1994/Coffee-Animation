@@ -16,6 +16,7 @@ const THUMB_SIZE = 50;
 
 type Props = {onComplete: () => void};
 
+/** Confirms an action only after the thumb crosses the slide threshold. */
 export const SlideToOrder = ({onComplete}: Props) => {
   const [width, setWidth] = useState(0);
   const [completed, setCompleted] = useState(false);

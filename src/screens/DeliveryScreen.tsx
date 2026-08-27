@@ -18,6 +18,7 @@ type Props = {
   onChangeStatus: (deliveryId: string, status: Delivery['status']) => void;
 };
 
+/** Lists current deliveries and exposes temporary interactive status changes. */
 export const DeliveryScreen = ({deliveries, onChangeStatus}: Props) => (
   <View style={styles.screen}>
     <StatusBar barStyle="light-content" backgroundColor={colors.background} />

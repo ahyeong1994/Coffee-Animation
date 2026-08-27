@@ -39,6 +39,7 @@ const PARTICLES = Array.from({length: 42}, (_, index) => {
 
 type Props = {onComplete: () => void};
 
+/** Requires a continuous hold, then plays completion and optional particles. */
 export const HoldToOrder = ({onComplete}: Props) => {
   const [width, setWidth] = useState(0);
   const [holding, setHolding] = useState(false);
