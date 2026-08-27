@@ -24,9 +24,11 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@react-native-camera-roll/camera-roll": "7.10.2",
     "lucide-react-native": "^1.33.0",
     "react": "18.2.0",
     "react-native": "0.72.4",
+    "react-native-shake": "6.8.1",
     "react-native-svg": "15.7.1",
     "react-native-vision-camera": "3.9.2"
   },

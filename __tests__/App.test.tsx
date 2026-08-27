@@ -4,6 +4,19 @@
 
 import 'react-native';
 import React from 'react';
+import {it, jest} from '@jest/globals';
+
+jest.mock('@react-native-camera-roll/camera-roll', () => ({
+  CameraRoll: {save: jest.fn(async () => 'saved-photo')},
+}));
+
+jest.mock('react-native-shake', () => ({
+  __esModule: true,
+  default: {
+    addListener: jest.fn(() => ({remove: jest.fn()})),
+    removeAllListeners: jest.fn(),
+  },
+}));
 
 jest.mock('react-native-vision-camera', () => {
   const ReactModule = require('react');
@@ -22,9 +35,6 @@ jest.mock('react-native-vision-camera', () => {
 });
 
 import App from '../src/App';
-
-// Note: import explicitly to use the types shiped with jest.
-import {it, jest} from '@jest/globals';
 
 // Note: test renderer must be required after react-native.
 import renderer from 'react-test-renderer';

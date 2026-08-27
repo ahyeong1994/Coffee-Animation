@@ -39,6 +39,10 @@
 	<string></string>
 	<key>NSCameraUsageDescription</key>
 	<string>Allow Noir Coffee to use your camera to create coffee memories.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Allow Noir Coffee to save your developed coffee memories to your photo album.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow Noir Coffee to add your coffee memories to the Noir Coffee album.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
