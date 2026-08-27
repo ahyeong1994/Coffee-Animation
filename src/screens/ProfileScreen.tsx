@@ -24,7 +24,9 @@ const menuItems: {Icon: LucideIcon; label: string; value: string}[] = [
   {Icon: CreditCard, label: 'Payment method', value: '•• 2048'},
 ];
 
-export const ProfileScreen = () => {
+type Props = {onOpenCoffeeCamera: () => void};
+
+export const ProfileScreen = ({onOpenCoffeeCamera}: Props) => {
   const [notifications, setNotifications] = useState(true);
 
   return (
@@ -38,7 +40,13 @@ export const ProfileScreen = () => {
             <Text style={styles.eyebrow}>YOUR SPACE</Text>
             <Text style={styles.title}>Profile</Text>
           </View>
-          <View style={styles.profileCard}>
+          <TouchableOpacity
+            accessibilityHint="Opens your animated coffee camera"
+            accessibilityLabel="Coffee Lover profile"
+            accessibilityRole="button"
+            activeOpacity={0.78}
+            onPress={onOpenCoffeeCamera}
+            style={styles.profileCard}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>FW</Text>
             </View>
@@ -47,7 +55,7 @@ export const ProfileScreen = () => {
               <Text style={styles.member}>GOLD MEMBER · 1,240 BEANS</Text>
             </View>
             <ChevronRight color={colors.gold} size={22} strokeWidth={1.8} />
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.menu}>
             {menuItems.map(item => {

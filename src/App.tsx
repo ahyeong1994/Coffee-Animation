@@ -3,6 +3,7 @@ import {Animated, Easing, StyleSheet, View} from 'react-native';
 import {BottomTabs} from './components/common/BottomTabs';
 import {initialDeliveries} from './data/coffee';
 import {CartScreen} from './screens/CartScreen';
+import {CoffeeCameraScreen} from './screens/CoffeeCameraScreen';
 import {DeliveryScreen} from './screens/DeliveryScreen';
 import {OrderScreen} from './screens/OrderScreen';
 import {ProfileScreen} from './screens/ProfileScreen';
@@ -11,6 +12,7 @@ import {AppTab, CartLine, Coffee, Delivery} from './types/app';
 
 const App = (): JSX.Element => {
   const [activeTab, setActiveTab] = useState<AppTab>('order');
+  const [profileCameraOpen, setProfileCameraOpen] = useState(false);
   const [cart, setCart] = useState<CartLine[]>([]);
   const [deliveries, setDeliveries] = useState<Delivery[]>(initialDeliveries);
   const pageProgress = useRef(new Animated.Value(1)).current;
@@ -23,7 +25,7 @@ const App = (): JSX.Element => {
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start();
-  }, [activeTab, pageProgress]);
+  }, [activeTab, pageProgress, profileCameraOpen]);
 
   const addToCart = (coffee: Coffee) => {
     setCart(current => {
@@ -84,6 +86,10 @@ const App = (): JSX.Element => {
   const cartCount = cart.reduce((total, line) => total + line.quantity, 0);
 
   const renderScreen = () => {
+    if (profileCameraOpen) {
+      return <CoffeeCameraScreen onBack={() => setProfileCameraOpen(false)} />;
+    }
+
     switch (activeTab) {
       case 'cart':
         return (
@@ -103,7 +109,11 @@ const App = (): JSX.Element => {
           />
         );
       case 'profile':
-        return <ProfileScreen />;
+        return (
+          <ProfileScreen
+            onOpenCoffeeCamera={() => setProfileCameraOpen(true)}
+          />
+        );
       case 'order':
       default:
         return (
@@ -119,7 +129,7 @@ const App = (): JSX.Element => {
   return (
     <View style={styles.root}>
       <Animated.View
-        key={activeTab}
+        key={profileCameraOpen ? 'coffee-camera' : activeTab}
         style={[
           styles.page,
           {
@@ -136,11 +146,13 @@ const App = (): JSX.Element => {
         ]}>
         {renderScreen()}
       </Animated.View>
-      <BottomTabs
-        activeTab={activeTab}
-        cartCount={cartCount}
-        onChange={setActiveTab}
-      />
+      {!profileCameraOpen ? (
+        <BottomTabs
+          activeTab={activeTab}
+          cartCount={cartCount}
+          onChange={setActiveTab}
+        />
+      ) : null}
     </View>
   );
 };
