@@ -10,7 +10,10 @@ import {
 } from 'react-native';
 import {colors} from '../../../theme';
 import type {PhotoPhase} from '../../../types/camera';
-import {POLAROID_PRINT_MOTION} from '../../../animations/camera/photoPrintConfig';
+import {
+  PHOTO_SHAKE_TIMING,
+  POLAROID_PRINT_MOTION,
+} from '../../../animations/camera/photoPrintConfig';
 
 type Props = {
   cardWidth: number;
@@ -21,6 +24,7 @@ type Props = {
   photoProgress: Animated.Value;
   developProgress: Animated.Value;
   cardShake: Animated.Value;
+  shakeProgress: number;
   arrowBounce: Animated.Value;
   photoPull: Animated.Value;
   panHandlers: GestureResponderHandlers;
@@ -37,14 +41,23 @@ export const DevelopingPolaroid = ({
   photoProgress,
   developProgress,
   cardShake,
+  shakeProgress,
   arrowBounce,
   photoPull,
   panHandlers,
   onDiscard,
 }: Props) => {
   const isShakeStage =
-    photoPhase === 'waitingForShake' || photoPhase === 'revealing';
+    photoPhase === 'waitingForShake' ||
+    photoPhase === 'shaking' ||
+    photoPhase === 'revealing';
   const isSaveStage = photoPhase === 'readyToSave' || photoPhase === 'saving';
+  const shakeSecondsRemaining = Math.max(
+    0,
+    Math.ceil(
+      ((1 - shakeProgress) * PHOTO_SHAKE_TIMING.requiredDuration) / 1000,
+    ),
+  );
 
   return (
     <View pointerEvents="box-none" style={styles.viewport}>
@@ -81,6 +94,19 @@ export const DevelopingPolaroid = ({
                 translateX: cardShake.interpolate({
                   inputRange: [0, 0.2, 0.4, 0.6, 0.8, 1],
                   outputRange: [0, -10, 11, -8, 6, 0],
+                }),
+              },
+              {
+                rotate: cardShake.interpolate({
+                  inputRange: [0, 0.2, 0.4, 0.6, 0.8, 1],
+                  outputRange: [
+                    '0deg',
+                    '-2.2deg',
+                    '2.4deg',
+                    '-1.8deg',
+                    '1.2deg',
+                    '0deg',
+                  ],
                 }),
               },
               {translateY: photoPull},
@@ -130,11 +156,27 @@ export const DevelopingPolaroid = ({
               ]}>
               <Smartphone color={colors.goldSoft} size={22} strokeWidth={1.6} />
               <Text style={styles.shakeHintTitle}>
-                {photoPhase === 'revealing' ? 'DEVELOPING…' : 'SHAKE IT'}
+                {photoPhase === 'revealing'
+                  ? 'DEVELOPING…'
+                  : photoPhase === 'shaking'
+                  ? `KEEP SHAKING · ${shakeSecondsRemaining}S`
+                  : 'SHAKE IT'}
               </Text>
               <Text style={styles.shakeHintText}>
-                Give your phone a gentle shake
+                {photoPhase === 'shaking'
+                  ? 'Keep moving to develop your photo'
+                  : 'Give your phone a gentle shake'}
               </Text>
+              {photoPhase === 'shaking' ? (
+                <View style={styles.shakeProgressTrack}>
+                  <View
+                    style={[
+                      styles.shakeProgressFill,
+                      {width: `${Math.round(shakeProgress * 100)}%`},
+                    ]}
+                  />
+                </View>
+              ) : null}
             </View>
           )}
         </View>
@@ -262,6 +304,19 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   shakeHintText: {marginTop: 4, color: colors.muted, fontSize: 7},
+  shakeProgressTrack: {
+    width: 86,
+    height: 3,
+    marginTop: 9,
+    borderRadius: 2,
+    overflow: 'hidden',
+    backgroundColor: colors.elevated,
+  },
+  shakeProgressFill: {
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: colors.goldSoft,
+  },
   captionRow: {
     marginTop: 15,
     paddingHorizontal: 3,

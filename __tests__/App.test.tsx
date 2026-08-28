@@ -10,12 +10,12 @@ jest.mock('@react-native-camera-roll/camera-roll', () => ({
   CameraRoll: {save: jest.fn(async () => 'saved-photo')},
 }));
 
-jest.mock('react-native-shake', () => ({
-  __esModule: true,
-  default: {
-    addListener: jest.fn(() => ({remove: jest.fn()})),
-    removeAllListeners: jest.fn(),
+jest.mock('react-native-sensors', () => ({
+  accelerometer: {
+    subscribe: jest.fn(() => ({unsubscribe: jest.fn()})),
   },
+  SensorTypes: {accelerometer: 'accelerometer'},
+  setUpdateIntervalForType: jest.fn(),
 }));
 
 jest.mock('react-native-vision-camera', () => {

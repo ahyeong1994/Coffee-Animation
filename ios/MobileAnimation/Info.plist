@@ -37,6 +37,8 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>NSMotionUsageDescription</key>
+	<string>Allow Noir Coffee to detect shaking while developing your coffee photo.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Allow Noir Coffee to use your camera to create coffee memories.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

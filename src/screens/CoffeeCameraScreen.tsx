@@ -91,6 +91,7 @@ export const CoffeeCameraScreen = ({onBack}: Props) => {
               photoProgress={photoFlow.photoProgress}
               photoPull={photoFlow.photoPull}
               photoUri={photoFlow.photoUri}
+              shakeProgress={photoFlow.shakeProgress}
             />
           )}
         </View>

@@ -29,3 +29,16 @@ export const POLAROID_PRINT_LAYOUT = {
   widthRatio: 0.73,
   maxWidth: 390,
 } as const;
+
+export const PHOTO_SHAKE_TIMING = {
+  requiredDuration: 3000,
+  // Sensor and gesture tuning. All movement values are normalized to g.
+  sampleInterval: 40,
+  activityThreshold: 0.16,
+  pulseThreshold: 0.52,
+  pulseCooldown: 280,
+  activityGracePeriod: 260,
+  inactivityResetDelay: 560,
+  pulseAnimationDuration: 250,
+  revealDuration: 2200,
+} as const;

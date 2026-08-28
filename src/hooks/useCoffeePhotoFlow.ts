@@ -1,10 +1,11 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Animated, Easing, PanResponder} from 'react-native';
-import RNShake from 'react-native-shake';
 import {
+  PHOTO_SHAKE_TIMING,
   POLAROID_PRINT_MOTION,
   POLAROID_PRINT_TIMING,
 } from '../animations/camera/photoPrintConfig';
+import {useContinuousShakeDetection} from '../animations/camera/useContinuousShakeDetection';
 import {saveCoffeePhoto} from '../services/photoLibrary';
 import type {PhotoPhase} from '../types/camera';
 
@@ -29,7 +30,8 @@ const springPhotoBack = (photoPull: Animated.Value) => {
  * - photoPhase is the state machine; render UI from the phase instead of adding
  *   separate booleans for every step.
  * - replace saveCoffeePhoto when the target project uses another media library.
- * - RNShake is the only sensor dependency; all motion uses React Native Animated.
+ * - useContinuousShakeDetection owns raw accelerometer sampling.
+ * - cardShake remains React Native Animated, so it can be copied independently.
  */
 export const useCoffeePhotoFlow = () => {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -68,35 +70,37 @@ export const useCoffeePhotoFlow = () => {
     [],
   );
 
-  /** Starts one reveal sequence and ignores duplicate shake events. */
+  /** Plays exactly one card wobble for one accelerometer shake pulse. */
+  const playCardShakePulse = useCallback(() => {
+    cardShake.stopAnimation();
+    cardShake.setValue(0);
+    Animated.timing(cardShake, {
+      toValue: 1,
+      duration: PHOTO_SHAKE_TIMING.pulseAnimationDuration,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start(({finished}) => {
+      if (finished) {
+        cardShake.setValue(0);
+      }
+    });
+  }, [cardShake]);
+
+  /** Starts development only after the three-second card shake has completed. */
   const revealPhoto = useCallback(() => {
     if (revealStarted.current) {
       return;
     }
 
     revealStarted.current = true;
+    cardShake.stopAnimation();
+    cardShake.setValue(0);
     setPhotoPhase('revealing');
-
-    // A tiny horizontal shake acknowledges the physical device shake first.
-    Animated.sequence([
-      Animated.timing(cardShake, {
-        toValue: 1,
-        duration: 75,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-      Animated.timing(cardShake, {
-        toValue: 0,
-        duration: 420,
-        easing: Easing.out(Easing.elastic(2.2)),
-        useNativeDriver: true,
-      }),
-    ]).start();
 
     // Then develop blur 22 -> 0 slowly, like instant film becoming visible.
     Animated.timing(clarityProgress, {
       toValue: 1,
-      duration: 2200,
+      duration: PHOTO_SHAKE_TIMING.revealDuration,
       easing: Easing.inOut(Easing.cubic),
       useNativeDriver: false,
     }).start(({finished}) => {
@@ -106,14 +110,25 @@ export const useCoffeePhotoFlow = () => {
     });
   }, [cardShake, clarityProgress]);
 
-  useEffect(() => {
-    if (photoPhase !== 'waitingForShake') {
-      return;
-    }
+  const beginShakeActivity = useCallback(() => {
+    setPhotoPhase(current =>
+      current === 'waitingForShake' ? 'shaking' : current,
+    );
+  }, []);
 
-    const subscription = RNShake.addListener(revealPhoto);
-    return () => subscription.remove();
-  }, [photoPhase, revealPhoto]);
+  const resetShakeActivity = useCallback(() => {
+    setPhotoPhase(current =>
+      current === 'shaking' ? 'waitingForShake' : current,
+    );
+  }, []);
+
+  const shakeProgress = useContinuousShakeDetection({
+    active: photoPhase === 'waitingForShake' || photoPhase === 'shaking',
+    onActivityStart: beginShakeActivity,
+    onActivityReset: resetShakeActivity,
+    onShakePulse: playCardShakePulse,
+    onComplete: revealPhoto,
+  });
 
   useEffect(() => {
     if (photoPhase !== 'readyToSave') {
@@ -309,6 +324,7 @@ export const useCoffeePhotoFlow = () => {
     blurRadius,
     saveError,
     savedMessageVisible,
+    shakeProgress,
     photoProgress,
     developProgress,
     cardShake,

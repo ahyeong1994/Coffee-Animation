@@ -14,12 +14,12 @@
     "android:qa": "ENVFILE=.env.qa react-native run-android",
     "android:preprod": "ENVFILE=.env.preprod react-native run-android",
     "android:prod": "ENVFILE=.env.prod react-native run-android",
-    "android:build": "yarn android:clean && cd android && ENVFILE=.env.loc ./gradlew assembleRelease",
-    "android:build:dev": "yarn android:clean && cd android && ENVFILE=.env.dev ./gradlew assembledevRelease",
-    "android:build:iqa": "yarn android:clean && cd android && ENVFILE=.env.iqa ./gradlew assembleiqaRelease",
-    "android:build:qa": "yarn android:clean && cd android && ENVFILE=.env.qa ./gradlew assembleqaRelease",
-    "android:build:preprod": "yarn android:clean && cd android && ENVFILE=.env.preprod ./gradlew assemblepreprodRelease",
-    "android:build:prod": "yarn android:clean && cd android && ENVFILE=.env.prod ./gradlew assembleprodRelease",
+    "android:build": "npm run android:clean && cd android && ENVFILE=.env.loc ./gradlew assembleRelease",
+    "android:build:dev": "npm run android:clean && cd android && ENVFILE=.env.dev ./gradlew assembleRelease",
+    "android:build:iqa": "npm run android:clean && cd android && ENVFILE=.env.iqa ./gradlew assembleRelease",
+    "android:build:qa": "npm run android:clean && cd android && ENVFILE=.env.qa ./gradlew assembleRelease",
+    "android:build:preprod": "npm run android:clean && cd android && ENVFILE=.env.preprod ./gradlew assembleRelease",
+    "android:build:prod": "npm run android:clean && cd android && ENVFILE=.env.prod ./gradlew assembleRelease",
     "android:clean": "rm -rf ./android/app/build",
     "postinstall": "patch-package"
   },
@@ -29,7 +29,7 @@
     "react": "18.2.0",
     "react-native": "0.72.4",
     "react-native-reanimated": "3.15.5",
-    "react-native-shake": "6.8.1",
+    "react-native-sensors": "7.3.6",
     "react-native-svg": "15.7.1",
     "react-native-vision-camera": "3.9.2"
   },
@@ -55,5 +55,5 @@
   "engines": {
     "node": ">=16"
   },
-  "packageManager": "pnpm@10.31.0+sha512.e3927388bfaa8078ceb79b748ffc1e8274e84d75163e67bc22e06c0d3aed43dd153151cbf11d7f8301ff4acb98c68bdc5cadf6989532801ffafe3b3e4a63c268"
+  "packageManager": "npm@11.12.1"
 }
