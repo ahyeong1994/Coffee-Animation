@@ -19,7 +19,9 @@ type Props = {
   flashEnabled: boolean;
   canUseFlash: boolean;
   cameraError: string | null;
+  isCapturing: boolean;
   shutterScale: Animated.Value;
+  shutterLoadingRotation: Animated.Value;
   onCameraError: (message: string) => void;
   onRequestPermission: () => Promise<boolean>;
   onToggleFlash: () => void;
@@ -39,7 +41,9 @@ export const PullDownCameraContent = ({
   flashEnabled,
   canUseFlash,
   cameraError,
+  isCapturing,
   shutterScale,
+  shutterLoadingRotation,
   onCameraError,
   onRequestPermission,
   onToggleFlash,
@@ -112,11 +116,35 @@ export const PullDownCameraContent = ({
       <Pressable
         accessibilityLabel="Take photo"
         accessibilityRole="button"
-        disabled={!hasPermission || !device}
+        disabled={!hasPermission || !device || isCapturing}
         onPress={onTakePhoto}>
         <Animated.View
           style={[styles.shutterOuter, {transform: [{scale: shutterScale}]}]}>
-          <View style={styles.shutterInner} />
+          <View
+            style={[
+              styles.shutterInner,
+              isCapturing && styles.shutterInnerLoading,
+            ]}>
+            {isCapturing ? (
+              <Animated.View
+                accessibilityLabel="Taking photo"
+                accessibilityRole="progressbar"
+                style={[
+                  styles.shutterLoadingRing,
+                  {
+                    transform: [
+                      {
+                        rotate: shutterLoadingRotation.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '360deg'],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              />
+            ) : null}
+          </View>
         </Animated.View>
       </Pressable>
 
@@ -326,6 +354,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     borderWidth: 1,
     borderColor: colors.cream,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shutterInnerLoading: {backgroundColor: '#111114'},
+  shutterLoadingRing: {
+    width: 31,
+    height: 31,
+    borderRadius: 16,
+    borderWidth: 3,
+    borderColor: 'rgba(213,181,109,0.28)',
+    borderTopColor: colors.cream,
+    borderRightColor: colors.gold,
   },
   cameraHint: {
     height: 16,

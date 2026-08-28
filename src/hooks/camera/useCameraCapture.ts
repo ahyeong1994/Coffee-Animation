@@ -6,6 +6,10 @@ import {
   useCameraDevice,
   useCameraPermission,
 } from 'react-native-vision-camera';
+import {CAMERA_CAPTURE_TIMING} from '../../animations/camera/photoPrintConfig';
+
+const wait = (duration: number) =>
+  new Promise<void>(resolve => setTimeout(resolve, duration));
 
 type Options = {
   isCameraOpen: React.MutableRefObject<boolean>;
@@ -26,12 +30,14 @@ export const useCameraCapture = ({
 }: Options) => {
   const cameraRef = useRef<Camera>(null);
   const shutterScale = useRef(new Animated.Value(1)).current;
+  const shutterLoadingRotation = useRef(new Animated.Value(0)).current;
   const flashOverlay = useRef(new Animated.Value(0)).current;
-  const isCapturing = useRef(false);
+  const capturingRef = useRef(false);
   const permissionRequested = useRef(false);
   const [position, setPosition] = useState<CameraPosition>('back');
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
   const {hasPermission, requestPermission} = useCameraPermission();
   const device = useCameraDevice(position);
   const canUseFlash = position === 'back' && Boolean(device?.hasFlash);
@@ -51,6 +57,26 @@ export const useCameraCapture = ({
     }
   }, [canUseFlash]);
 
+  useEffect(() => {
+    shutterLoadingRotation.stopAnimation();
+    shutterLoadingRotation.setValue(0);
+    if (!isCapturing) {
+      return;
+    }
+
+    // Rotate a custom ring while native camera capture is still in progress.
+    const loadingLoop = Animated.loop(
+      Animated.timing(shutterLoadingRotation, {
+        toValue: 1,
+        duration: CAMERA_CAPTURE_TIMING.loadingRotationDuration,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+    loadingLoop.start();
+    return () => loadingLoop.stop();
+  }, [isCapturing, shutterLoadingRotation]);
+
   /** Switches between the front and rear devices and clears old errors. */
   const toggleCamera = useCallback(() => {
     setCameraError(null);
@@ -69,13 +95,14 @@ export const useCameraCapture = ({
     if (
       !cameraRef.current ||
       !device ||
-      isCapturing.current ||
+      capturingRef.current ||
       !isCameraOpen.current
     ) {
       return;
     }
 
-    isCapturing.current = true;
+    capturingRef.current = true;
+    setIsCapturing(true);
     setCameraError(null);
 
     // Compress and rebound the shutter immediately, before native capture ends.
@@ -95,10 +122,15 @@ export const useCameraCapture = ({
     ]).start();
 
     try {
-      const photo = await cameraRef.current.takePhoto({
-        flash: flashEnabled && canUseFlash ? 'on' : 'off',
-        qualityPrioritization: 'speed',
-      });
+      // Promise.all keeps the loading ring visible long enough to be readable,
+      // while still waiting longer when the real camera capture needs more time.
+      const [photo] = await Promise.all([
+        cameraRef.current.takePhoto({
+          flash: flashEnabled && canUseFlash ? 'on' : 'off',
+          qualityPrioritization: 'speed',
+        }),
+        wait(CAMERA_CAPTURE_TIMING.minimumLoadingDuration),
+      ]);
       const photoUri = photo.path.startsWith('file://')
         ? photo.path
         : `file://${photo.path}`;
@@ -118,12 +150,14 @@ export const useCameraCapture = ({
         }),
       ]).start();
 
+      setIsCapturing(false);
       onCapture(photoUri);
       closeCameraAfterCapture();
     } catch {
       setCameraError('Photo could not be taken. Please try again.');
     } finally {
-      isCapturing.current = false;
+      capturingRef.current = false;
+      setIsCapturing(false);
     }
   }, [
     canUseFlash,
@@ -139,10 +173,12 @@ export const useCameraCapture = ({
   return {
     cameraRef,
     shutterScale,
+    shutterLoadingRotation,
     flashOverlay,
     position,
     flashEnabled,
     cameraError,
+    isCapturing,
     hasPermission,
     device,
     canUseFlash,

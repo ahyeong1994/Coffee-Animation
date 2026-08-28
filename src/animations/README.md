@@ -22,20 +22,20 @@ src/
 
 ## Animation catalogue
 
-| Animation | Controller | Renderer | Extra dependency |
-| --- | --- | --- | --- |
-| Cart flying queue | `cart/useCartFlightAnimation.ts` | `components/coffee/FlyingCoffee.tsx` | None |
-| Slide to order | `cart/useSlideToOrderAnimation.ts` | `components/cart/SlideToOrder.tsx` | None |
-| Hold to order | `cart/useHoldToOrderAnimation.ts` | `components/cart/HoldToOrder.tsx` | `react-native-svg` for gradient |
-| Order success check | `cart/useOrderSuccessAnimation.ts` | `components/cart/OrderSuccessOverlay.tsx` | Reanimated + SVG |
-| Pull-down camera | `camera/usePullDownCameraAnimation.ts` | `components/profile/PullDownCoffeeCamera.tsx` | VisionCamera only for real preview |
-| Polaroid photo flow | `hooks/useCoffeePhotoFlow.ts` | camera components | RNShake + CameraRoll |
-| Sticky search | `coffee/useStickySearchAnimation.ts` | `screens/OrderScreen.tsx` | None |
-| Coffee card focus | local values in `AnimatedCoffeeCard.tsx` | same file | None |
-| Category indicator | local values in `CoffeeCategorySelector.tsx` | same file | None |
-| Delivery radar | `delivery/useDeliveryStepRadarAnimation.ts` | `components/delivery/DeliveryStepDot.tsx` | None |
-| Delivery bike | `delivery/useDeliveryVehicleAnimation.ts` | `components/delivery/DeliveryProgress.tsx` | None |
-| Page transition | `navigation/usePageTransitionAnimation.ts` | `App.tsx` | None |
+| Animation           | Controller                                   | Renderer                                      | Extra dependency                   |
+| ------------------- | -------------------------------------------- | --------------------------------------------- | ---------------------------------- |
+| Cart flying queue   | `cart/useCartFlightAnimation.ts`             | `components/coffee/FlyingCoffee.tsx`          | None                               |
+| Slide to order      | `cart/useSlideToOrderAnimation.ts`           | `components/cart/SlideToOrder.tsx`            | None                               |
+| Hold to order       | `cart/useHoldToOrderAnimation.ts`            | `components/cart/HoldToOrder.tsx`             | `react-native-svg` for gradient    |
+| Order success check | `cart/useOrderSuccessAnimation.ts`           | `components/cart/OrderSuccessOverlay.tsx`     | Reanimated + SVG                   |
+| Pull-down camera    | `camera/usePullDownCameraAnimation.ts`       | `components/profile/PullDownCoffeeCamera.tsx` | VisionCamera only for real preview |
+| Polaroid photo flow | `hooks/useCoffeePhotoFlow.ts`                | camera components                             | RNShake + CameraRoll               |
+| Sticky search       | `coffee/useStickySearchAnimation.ts`         | `screens/OrderScreen.tsx`                     | None                               |
+| Coffee card focus   | local values in `AnimatedCoffeeCard.tsx`     | same file                                     | None                               |
+| Category indicator  | local values in `CoffeeCategorySelector.tsx` | same file                                     | None                               |
+| Delivery radar      | `delivery/useDeliveryStepRadarAnimation.ts`  | `components/delivery/DeliveryStepDot.tsx`     | None                               |
+| Delivery bike       | `delivery/useDeliveryVehicleAnimation.ts`    | `components/delivery/DeliveryProgress.tsx`    | None                               |
+| Page transition     | `navigation/usePageTransitionAnimation.ts`   | `App.tsx`                                     | None                               |
 
 所有 public animation 都可从 `src/animations/index.ts` import。
 
@@ -68,10 +68,8 @@ sourceRef.current?.measureInWindow((x, y, width, height) => {
 const animation = useSlideToOrderAnimation({maxTravel, onComplete});
 
 <Animated.View {...animation.panHandlers}>
-  <Animated.View
-    style={{transform: [{translateX: animation.translateX}]}}
-  />
-</Animated.View>
+  <Animated.View style={{transform: [{translateX: animation.translateX}]}} />
+</Animated.View>;
 ```
 
 完成条件在 hook 内：滑过 78%，或滑过 58% 同时速度大于 `0.9`。这些数字就是
@@ -97,11 +95,28 @@ const radar = useDeliveryStepRadarAnimation(isCurrentStep);
     opacity: radar.radarOpacity,
     transform: [{scale: radar.radarScale}],
   }}
-/>
+/>;
 ```
 
 外圈使用 `radarScale/radarOpacity`，中心点使用
 `dotScale/dotOpacity`。当 `active=false` 时 hook 会停止并清理两个无限循环。
+
+## Tune the shutter and Polaroid print
+
+所有快门和照片打印参数集中在 `camera/photoPrintConfig.ts`：
+
+- `minimumLoadingDuration`：快门 loading 最少显示多久。
+- `loadingRotationDuration`：loading ring 转一圈的速度。
+- `ejectDelay`：相机关闭后多久开始出照片。
+- `ejectDuration`：照片从 printer slot 完整推出的速度。
+- `settleDuration`：照片从放大姿态缩回正常大小的速度。
+- `translateY`：开始、完整推出、最终落位的三个 Y 位置。
+- `scale`：默认 `[0.68, 1.14, 1]`，中间值控制最大尺寸。
+- `rotate`：照片开始、推出和落位时的三个角度。
+- `widthRatio/maxWidth`：Polaroid 与变形后 printer button 共用的宽度公式。
+
+打印使用两段 timing。第一段到 `ejectProgress`，第二段到 `1`，因此照片可以先
+放大并转向，再缩小到最终角度，而不是从头到尾只做一种变化。
 
 ## React Native Animated vs Reanimated
 

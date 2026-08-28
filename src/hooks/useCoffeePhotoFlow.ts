@@ -1,6 +1,10 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Animated, Easing, PanResponder} from 'react-native';
 import RNShake from 'react-native-shake';
+import {
+  POLAROID_PRINT_MOTION,
+  POLAROID_PRINT_TIMING,
+} from '../animations/camera/photoPrintConfig';
 import {saveCoffeePhoto} from '../services/photoLibrary';
 import type {PhotoPhase} from '../types/camera';
 
@@ -242,26 +246,27 @@ export const useCoffeePhotoFlow = () => {
       // Printing and paper development overlap but start at different delays.
       Animated.parallel([
         Animated.sequence([
-          Animated.delay(360),
+          Animated.delay(POLAROID_PRINT_TIMING.ejectDelay),
           Animated.timing(photoProgress, {
-            toValue: 0.82,
-            duration: 1150,
+            // First expose the whole card at an intentionally oversized pose.
+            toValue: POLAROID_PRINT_MOTION.ejectProgress,
+            duration: POLAROID_PRINT_TIMING.ejectDuration,
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }),
-          Animated.spring(photoProgress, {
+          Animated.timing(photoProgress, {
+            // Then shrink and rotate into the final resting pose.
             toValue: 1,
-            damping: 18,
-            stiffness: 95,
-            mass: 1.05,
+            duration: POLAROID_PRINT_TIMING.settleDuration,
+            easing: Easing.out(Easing.back(1.35)),
             useNativeDriver: true,
           }),
         ]),
         Animated.sequence([
-          Animated.delay(760),
+          Animated.delay(POLAROID_PRINT_TIMING.developDelay),
           Animated.timing(developProgress, {
             toValue: 1,
-            duration: 1450,
+            duration: POLAROID_PRINT_TIMING.developDuration,
             easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),

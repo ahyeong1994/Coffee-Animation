@@ -16,7 +16,11 @@ import {useCameraCapture} from '../../hooks/camera/useCameraCapture';
 import {colors} from '../../theme';
 import {PullDownCameraContent} from './camera/PullDownCameraContent';
 
-type Props = {onCapture: (photoUri: string) => void};
+type Props = {
+  onCapture: (photoUri: string) => void;
+  printing: boolean;
+  printerWidth: number;
+};
 
 export type PullDownCoffeeCameraHandle = {
   beginPull: () => void;
@@ -32,9 +36,14 @@ export type PullDownCoffeeCameraHandle = {
 export const PullDownCoffeeCamera = forwardRef<
   PullDownCoffeeCameraHandle,
   Props
->(({onCapture}, ref) => {
+>(({onCapture, printing, printerWidth}, ref) => {
   const {width: screenWidth, height: screenHeight} = useWindowDimensions();
-  const panel = usePullDownCameraAnimation({screenWidth, screenHeight});
+  const panel = usePullDownCameraAnimation({
+    screenWidth,
+    screenHeight,
+    printing,
+    printerWidth,
+  });
   const {animateCamera} = panel;
 
   const closeCameraAfterCapture = useCallback(
@@ -73,6 +82,7 @@ export const PullDownCoffeeCamera = forwardRef<
           accessibilityHint="Drag this control down to the bottom to open the camera"
           accessibilityLabel="Pull down camera"
           accessibilityRole="button"
+          disabled={printing}
           onPress={() => animateCamera(!panel.isOpen.current)}
           style={styles.notchButton}>
           <Animated.View
@@ -85,6 +95,13 @@ export const PullDownCoffeeCamera = forwardRef<
           </Animated.View>
         </Pressable>
 
+        <Animated.View
+          pointerEvents="none"
+          style={[styles.printerSlot, {opacity: panel.printerOpacity}]}>
+          <View style={styles.printerMouth} />
+          <View style={styles.printerHighlight} />
+        </Animated.View>
+
         <PullDownCameraContent
           cameraActive={panel.cameraActive}
           cameraError={capture.cameraError}
@@ -95,6 +112,7 @@ export const PullDownCoffeeCamera = forwardRef<
           device={capture.device}
           flashEnabled={capture.flashEnabled}
           hasPermission={capture.hasPermission}
+          isCapturing={capture.isCapturing}
           onCameraError={capture.setCameraError}
           onRequestPermission={capture.requestPermission}
           onTakePhoto={capture.takePhoto}
@@ -102,6 +120,7 @@ export const PullDownCoffeeCamera = forwardRef<
           onToggleFlash={capture.toggleFlash}
           position={capture.position}
           shutterScale={capture.shutterScale}
+          shutterLoadingRotation={capture.shutterLoadingRotation}
         />
 
         <Animated.View
@@ -174,6 +193,28 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 1.4,
     color: colors.gold,
+  },
+  printerSlot: {
+    ...StyleSheet.absoluteFillObject,
+    paddingHorizontal: 16,
+    paddingVertical: 5,
+    justifyContent: 'center',
+    zIndex: 4,
+  },
+  printerMouth: {
+    flex: 1,
+    maxHeight: 8,
+    borderRadius: 5,
+    backgroundColor: '#000000',
+  },
+  printerHighlight: {
+    position: 'absolute',
+    left: 22,
+    right: 22,
+    bottom: 2,
+    height: 1,
+    backgroundColor: colors.goldSoft,
+    opacity: 0.45,
   },
   pullIndicator: {
     position: 'absolute',

@@ -10,8 +10,10 @@ import {
 } from 'react-native';
 import {colors} from '../../../theme';
 import type {PhotoPhase} from '../../../types/camera';
+import {POLAROID_PRINT_MOTION} from '../../../animations/camera/photoPrintConfig';
 
 type Props = {
+  cardWidth: number;
   photoUri: string;
   photoNumber: number;
   photoPhase: PhotoPhase;
@@ -27,6 +29,7 @@ type Props = {
 
 /** Renders the print, blur, shake hint, discard, and pull-to-save card UI. */
 export const DevelopingPolaroid = ({
+  cardWidth,
   photoUri,
   photoNumber,
   photoPhase,
@@ -49,6 +52,7 @@ export const DevelopingPolaroid = ({
         {...panHandlers}
         style={[
           styles.polaroid,
+          {width: cardWidth},
           {
             opacity: photoProgress.interpolate({
               inputRange: [0, 0.08, 1],
@@ -57,20 +61,20 @@ export const DevelopingPolaroid = ({
             transform: [
               {
                 translateY: photoProgress.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-455, 50],
+                  inputRange: [0, POLAROID_PRINT_MOTION.ejectProgress, 1],
+                  outputRange: [...POLAROID_PRINT_MOTION.translateY],
                 }),
               },
               {
                 scale: photoProgress.interpolate({
-                  inputRange: [0, 0.82, 1],
-                  outputRange: [0.58, 0.97, 1],
+                  inputRange: [0, POLAROID_PRINT_MOTION.ejectProgress, 1],
+                  outputRange: [...POLAROID_PRINT_MOTION.scale],
                 }),
               },
               {
                 rotate: photoProgress.interpolate({
-                  inputRange: [0, 0.82, 1],
-                  outputRange: ['-1deg', '0.5deg', '-0.8deg'],
+                  inputRange: [0, POLAROID_PRINT_MOTION.ejectProgress, 1],
+                  outputRange: [...POLAROID_PRINT_MOTION.rotate],
                 }),
               },
               {
@@ -180,7 +184,9 @@ export const DevelopingPolaroid = ({
 const styles = StyleSheet.create({
   viewport: {
     position: 'absolute',
-    top: -4,
+    // CoffeeCameraScreen's content begins below a 68px header. Moving this
+    // viewport upward places its clipping edge directly under the printer.
+    top: -48,
     bottom: -20,
     left: 0,
     right: 0,
@@ -189,8 +195,6 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
   polaroid: {
-    width: '73%',
-    maxWidth: 390,
     borderRadius: 8,
     backgroundColor: colors.cream,
     padding: 14,
@@ -203,8 +207,8 @@ const styles = StyleSheet.create({
   },
   discardButton: {
     position: 'absolute',
-    top: -17,
-    right: -17,
+    top: 8,
+    right: 8,
     width: 38,
     height: 38,
     borderRadius: 19,

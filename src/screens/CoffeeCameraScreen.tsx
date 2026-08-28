@@ -6,25 +6,30 @@ import {
   SafeAreaView,
   StatusBar,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import {CoffeeCameraEmptyState} from '../components/profile/camera/CoffeeCameraEmptyState';
 import {DevelopingPolaroid} from '../components/profile/camera/DevelopingPolaroid';
 import {PhotoFlowFeedback} from '../components/profile/camera/PhotoFlowFeedback';
-import {PolaroidPrinterSlot} from '../components/profile/camera/PolaroidPrinterSlot';
 import {
   PullDownCoffeeCamera,
   type PullDownCoffeeCameraHandle,
 } from '../components/profile/PullDownCoffeeCamera';
-import {useCoffeePhotoFlow} from '../animations/camera';
+import {POLAROID_PRINT_LAYOUT, useCoffeePhotoFlow} from '../animations/camera';
 import {colors, spacing} from '../theme';
 
 type Props = {onBack: () => void};
 
 /** Composes the pull-down camera with the post-capture development flow. */
 export const CoffeeCameraScreen = ({onBack}: Props) => {
+  const {width: screenWidth} = useWindowDimensions();
   const cameraController = useRef<PullDownCoffeeCameraHandle>(null);
   const photoFlow = useCoffeePhotoFlow();
+  const polaroidWidth = Math.min(
+    (screenWidth - spacing.screen * 2) * POLAROID_PRINT_LAYOUT.widthRatio,
+    POLAROID_PRINT_LAYOUT.maxWidth,
+  );
 
   const pagePanResponder = useMemo(
     () =>
@@ -65,11 +70,9 @@ export const CoffeeCameraScreen = ({onBack}: Props) => {
         <PullDownCoffeeCamera
           ref={cameraController}
           onCapture={photoFlow.handleCapture}
+          printing={photoFlow.photoPhase === 'printing'}
+          printerWidth={polaroidWidth}
         />
-
-        {photoFlow.photoUri && (
-          <PolaroidPrinterSlot photoProgress={photoFlow.photoProgress} />
-        )}
 
         <View style={styles.content}>
           {!photoFlow.photoUri ? (
@@ -78,6 +81,7 @@ export const CoffeeCameraScreen = ({onBack}: Props) => {
             <DevelopingPolaroid
               arrowBounce={photoFlow.arrowBounce}
               blurRadius={photoFlow.blurRadius}
+              cardWidth={polaroidWidth}
               cardShake={photoFlow.cardShake}
               developProgress={photoFlow.developProgress}
               onDiscard={photoFlow.discardPhoto}
