@@ -33,6 +33,7 @@ export const SwipeableCartItem = ({
     (open: boolean) => {
       openRef.current = open;
       setIsOpen(open);
+      // Springing to exactly -ACTION_WIDTH fully reveals the remove action.
       Animated.spring(translateX, {
         toValue: open ? -ACTION_WIDTH : 0,
         damping: 20,
@@ -55,6 +56,8 @@ export const SwipeableCartItem = ({
           translateX.stopAnimation();
         },
         onPanResponderMove: (_, gesture) => {
+          // Clamp between closed (0) and open (-ACTION_WIDTH), so right swipes
+          // never pull the foreground beyond its normal position.
           const next = Math.max(
             -ACTION_WIDTH,
             Math.min(0, gestureStart.current + gesture.dx),
@@ -62,6 +65,7 @@ export const SwipeableCartItem = ({
           translateX.setValue(next);
         },
         onPanResponderRelease: (_, gesture) => {
+          // Either a fast flick or crossing 42% of the action commits the row.
           const projected = gestureStart.current + gesture.dx;
           settle(gesture.vx < -0.35 || projected < -ACTION_WIDTH * 0.42);
         },

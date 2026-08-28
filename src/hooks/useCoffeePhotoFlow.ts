@@ -20,6 +20,12 @@ const springPhotoBack = (photoPull: Animated.Value) => {
 /**
  * Coordinates the full post-capture state machine: printing, shake detection,
  * gradual development, discard, pull gesture, and system-album saving.
+ *
+ * COPY NOTES
+ * - photoPhase is the state machine; render UI from the phase instead of adding
+ *   separate booleans for every step.
+ * - replace saveCoffeePhoto when the target project uses another media library.
+ * - RNShake is the only sensor dependency; all motion uses React Native Animated.
  */
 export const useCoffeePhotoFlow = () => {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -29,6 +35,8 @@ export const useCoffeePhotoFlow = () => {
   const [savedMessageVisible, setSavedMessageVisible] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Keep one value per visual responsibility. This makes individual phases easy
+  // to retime or copy without accidentally changing another effect.
   const photoProgress = useRef(new Animated.Value(0)).current;
   const developProgress = useRef(new Animated.Value(0)).current;
   const clarityProgress = useRef(new Animated.Value(0)).current;
@@ -39,6 +47,7 @@ export const useCoffeePhotoFlow = () => {
   const savedMessageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    // Image blurRadius is a number prop, so bridge normalized clarity into state.
     const listener = clarityProgress.addListener(({value}) => {
       const nextBlur = Math.round((1 - value) * INITIAL_BLUR_RADIUS);
       setBlurRadius(current => (current === nextBlur ? current : nextBlur));
@@ -64,6 +73,7 @@ export const useCoffeePhotoFlow = () => {
     revealStarted.current = true;
     setPhotoPhase('revealing');
 
+    // A tiny horizontal shake acknowledges the physical device shake first.
     Animated.sequence([
       Animated.timing(cardShake, {
         toValue: 1,
@@ -79,6 +89,7 @@ export const useCoffeePhotoFlow = () => {
       }),
     ]).start();
 
+    // Then develop blur 22 -> 0 slowly, like instant film becoming visible.
     Animated.timing(clarityProgress, {
       toValue: 1,
       duration: 2200,
@@ -228,6 +239,7 @@ export const useCoffeePhotoFlow = () => {
       revealStarted.current = false;
       resetPhotoAnimations();
 
+      // Printing and paper development overlap but start at different delays.
       Animated.parallel([
         Animated.sequence([
           Animated.delay(360),

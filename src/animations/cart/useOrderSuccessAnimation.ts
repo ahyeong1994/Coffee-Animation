@@ -14,7 +14,14 @@ import {
 const CHECK_PATH_LENGTH = 40;
 const ORDER_SUCCESS_DURATION = 1900;
 
-/** Runs the reusable order-confirmation reveal and notifies when it is done. */
+/**
+ * Runs the Reanimated order-confirmation reveal.
+ *
+ * COPY NOTES
+ * - The SVG path needs Animated.createAnimatedComponent(Path) in the renderer.
+ * - CHECK_PATH_LENGTH must cover the SVG path length; a larger value is safe.
+ * - Keep react-native-reanimated/plugin last in babel.config.js.
+ */
 export const useOrderSuccessAnimation = (onFinished: () => void) => {
   const onFinishedRef = useRef(onFinished);
   onFinishedRef.current = onFinished;
@@ -27,11 +34,13 @@ export const useOrderSuccessAnimation = (onFinished: () => void) => {
   const copyTranslateY = useSharedValue(12);
 
   useEffect(() => {
+    // Phase 1: fade in the full-screen layer and spring the circle into place.
     overlayOpacity.value = withTiming(1, {duration: 180});
     circleScale.value = withDelay(
       100,
       withSpring(1, {damping: 11, stiffness: 175, mass: 0.75}),
     );
+    // Phase 2: strokeDashoffset 40 -> 0 creates the hand-drawn checkmark.
     checkOffset.value = withDelay(
       330,
       withTiming(0, {
@@ -39,6 +48,7 @@ export const useOrderSuccessAnimation = (onFinished: () => void) => {
         easing: Easing.out(Easing.cubic),
       }),
     );
+    // Phase 3: pulse opacity and scale independently for a softer cyan bloom.
     glowOpacity.value = withDelay(
       520,
       withSequence(
@@ -63,12 +73,14 @@ export const useOrderSuccessAnimation = (onFinished: () => void) => {
         withTiming(1.02, {duration: 420}),
       ),
     );
+    // Phase 4: reveal supporting copy after the checkmark is readable.
     copyOpacity.value = withDelay(720, withTiming(1, {duration: 360}));
     copyTranslateY.value = withDelay(
       720,
       withSpring(0, {damping: 16, stiffness: 170}),
     );
 
+    // Navigation stays outside this hook; the parent decides what happens next.
     const completionTimer = setTimeout(
       () => onFinishedRef.current(),
       ORDER_SUCCESS_DURATION,

@@ -21,6 +21,7 @@ type TabProps = {
 };
 
 const CategoryTab = ({active, label, onPress}: TabProps) => {
+  // Color cannot use the native driver; pressScale can because it is transform.
   const activeProgress = useRef(new Animated.Value(active ? 1 : 0)).current;
   const pressScale = useRef(new Animated.Value(1)).current;
 
@@ -92,6 +93,8 @@ export const CoffeeCategorySelector = ({
       return;
     }
 
+    // One shared indicator moves beneath the labels, avoiding four separate
+    // active backgrounds and making category changes feel connected.
     Animated.spring(indicatorX, {
       toValue: destination,
       damping: 20,

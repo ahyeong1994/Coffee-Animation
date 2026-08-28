@@ -16,6 +16,8 @@ type Options = {
 /**
  * Owns all native camera behavior: permission, lens selection, flash state,
  * shutter feedback, and converting VisionCamera paths into file URIs.
+ * COPY NOTE: the animation values are renderer-agnostic, but capture requires
+ * react-native-vision-camera and its native permission configuration.
  */
 export const useCameraCapture = ({
   isCameraOpen,
@@ -76,6 +78,7 @@ export const useCameraCapture = ({
     isCapturing.current = true;
     setCameraError(null);
 
+    // Compress and rebound the shutter immediately, before native capture ends.
     Animated.sequence([
       Animated.spring(shutterScale, {
         toValue: 0.78,
@@ -100,6 +103,7 @@ export const useCameraCapture = ({
         ? photo.path
         : `file://${photo.path}`;
 
+      // A very short white overlay simulates the physical camera flash.
       Animated.sequence([
         Animated.timing(flashOverlay, {
           toValue: 1,

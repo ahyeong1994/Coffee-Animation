@@ -26,6 +26,8 @@ export const CoffeePreferencesDropdown = () => {
 
   const setOpen = (open: boolean) => {
     setExpanded(open);
+    // One normalized value coordinates height, opacity, content offset and the
+    // chevron rotation. Height requires the JS driver.
     Animated.timing(progress, {
       toValue: open ? 1 : 0,
       duration: open ? 280 : 220,

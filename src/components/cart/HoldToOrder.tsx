@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useState} from 'react';
 import {Check} from 'lucide-react-native';
 import Svg, {
   Defs,
@@ -9,255 +9,40 @@ import Svg, {
 } from 'react-native-svg';
 import {
   Animated,
-  Easing,
   LayoutChangeEvent,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import {
+  HOLD_PARTICLES,
+  HOLD_PARTICLES_ENABLED,
+} from '../../animations/cart/holdToOrderParticles';
+import {useHoldToOrderAnimation} from '../../animations/cart/useHoldToOrderAnimation';
 import {colors} from '../../theme';
-
-const HOLD_DURATION = 4500;
-// Toggle this to compare the hold animation with or without particles.
-const ENABLE_PARTICLE_EFFECT = false;
-const PARTICLE_COLORS = [colors.white, colors.cream, colors.goldSoft];
-const PARTICLES = Array.from({length: 42}, (_, index) => {
-  const upperRow = index % 2 === 0;
-
-  return {
-    x: ((index * 37 + 9) % 96) / 100,
-    y: upperRow ? -4 + ((index * 7) % 17) : 47 + ((index * 11) % 19),
-    size: 1 + ((index * 5) % 4),
-    driftX: -9 + ((index * 13) % 19),
-    travelY: 5 + ((index * 7) % 15),
-    delay: (index * 83) % 680,
-    duration: 520 + ((index * 47) % 520),
-    color: PARTICLE_COLORS[index % PARTICLE_COLORS.length],
-  };
-});
 
 type Props = {onComplete: () => void};
 
 /** Requires a continuous hold, then plays completion and optional particles. */
 export const HoldToOrder = ({onComplete}: Props) => {
   const [width, setWidth] = useState(0);
-  const [holding, setHolding] = useState(false);
-  const [completed, setCompleted] = useState(false);
-  const progress = useRef(new Animated.Value(0)).current;
-  const scale = useRef(new Animated.Value(1)).current;
-  const successScale = useRef(new Animated.Value(0.7)).current;
-  const shine = useRef(new Animated.Value(0)).current;
-  const glowPulse = useRef(new Animated.Value(0)).current;
-  const particleProgress = useRef(
-    PARTICLES.map(() => new Animated.Value(0)),
-  ).current;
-  const holdingRef = useRef(false);
-  const completedRef = useRef(false);
-  const shineLoop = useRef<ReturnType<typeof Animated.loop> | null>(null);
-  const glowLoop = useRef<ReturnType<typeof Animated.loop> | null>(null);
-  const particleLoops = useRef<ReturnType<typeof Animated.loop>[]>([]);
-  const completionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(
-    () => () => {
-      progress.stopAnimation();
-      scale.stopAnimation();
-      successScale.stopAnimation();
-      shineLoop.current?.stop();
-      glowLoop.current?.stop();
-      particleLoops.current.forEach(animation => animation.stop());
-      if (completionTimer.current) {
-        clearTimeout(completionTimer.current);
-      }
-    },
-    [progress, scale, successScale],
-  );
-
-  const finish = useCallback(() => {
-    if (completedRef.current) {
-      return;
-    }
-
-    holdingRef.current = false;
-    completedRef.current = true;
-    shineLoop.current?.stop();
-    glowLoop.current?.stop();
-    progress.setValue(1);
-    setHolding(false);
-    setCompleted(true);
-
-    Animated.parallel([
-      Animated.spring(scale, {
-        toValue: 1,
-        damping: 16,
-        stiffness: 240,
-        useNativeDriver: true,
-      }),
-      Animated.sequence([
-        Animated.spring(successScale, {
-          toValue: 1.12,
-          damping: 12,
-          stiffness: 260,
-          useNativeDriver: true,
-        }),
-        Animated.spring(successScale, {
-          toValue: 1,
-          damping: 15,
-          stiffness: 220,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.timing(glowPulse, {
-        toValue: 0.7,
-        duration: 280,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    completionTimer.current = setTimeout(onComplete, 480);
-  }, [glowPulse, onComplete, progress, scale, successScale]);
-
-  const startHolding = useCallback(() => {
-    if (!width || holdingRef.current || completedRef.current) {
-      return;
-    }
-
-    holdingRef.current = true;
-    setHolding(true);
-    progress.setValue(0);
-    shine.setValue(0);
-    glowPulse.setValue(0.25);
-    particleLoops.current.forEach(animation => animation.stop());
-    particleProgress.forEach(value => value.setValue(0));
-
-    shineLoop.current = Animated.loop(
-      Animated.timing(shine, {
-        toValue: 1,
-        duration: 920,
-        easing: Easing.inOut(Easing.quad),
-        useNativeDriver: true,
-      }),
-    );
-    glowLoop.current = Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowPulse, {
-          toValue: 0.78,
-          duration: 520,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(glowPulse, {
-          toValue: 0.3,
-          duration: 520,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-    shineLoop.current.start();
-    glowLoop.current.start();
-    if (ENABLE_PARTICLE_EFFECT) {
-      particleLoops.current = particleProgress.map((value, index) => {
-        const particle = PARTICLES[index];
-        const animation = Animated.loop(
-          Animated.sequence([
-            Animated.delay(particle.delay),
-            Animated.timing(value, {
-              toValue: 1,
-              duration: particle.duration,
-              easing: Easing.out(Easing.cubic),
-              useNativeDriver: true,
-            }),
-            Animated.timing(value, {
-              toValue: 0,
-              duration: 180,
-              easing: Easing.in(Easing.quad),
-              useNativeDriver: true,
-            }),
-          ]),
-        );
-        animation.start();
-        return animation;
-      });
-    }
-
-    Animated.spring(scale, {
-      toValue: 0.985,
-      damping: 18,
-      stiffness: 280,
-      useNativeDriver: true,
-    }).start();
-
-    Animated.timing(progress, {
-      toValue: 1,
-      duration: HOLD_DURATION,
-      easing: Easing.inOut(Easing.cubic),
-      useNativeDriver: false,
-    }).start(({finished}) => {
-      if (finished && holdingRef.current) {
-        finish();
-      }
-    });
-  }, [finish, glowPulse, particleProgress, progress, scale, shine, width]);
-
-  const cancelHolding = useCallback(() => {
-    if (!holdingRef.current || completedRef.current) {
-      return;
-    }
-
-    holdingRef.current = false;
-    setHolding(false);
-    shineLoop.current?.stop();
-    glowLoop.current?.stop();
-    particleLoops.current.forEach(animation => animation.stop());
-    particleProgress.forEach(value => {
-      value.stopAnimation(currentValue => {
-        Animated.timing(value, {
-          toValue: 0,
-          duration: Math.max(80, 180 * currentValue),
-          useNativeDriver: true,
-        }).start();
-      });
-    });
-    progress.stopAnimation();
-
-    Animated.parallel([
-      Animated.timing(progress, {
-        toValue: 0,
-        duration: 260,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: false,
-      }),
-      Animated.spring(scale, {
-        toValue: 1,
-        damping: 18,
-        stiffness: 260,
-        useNativeDriver: true,
-      }),
-      Animated.timing(glowPulse, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [glowPulse, particleProgress, progress, scale]);
+  const animation = useHoldToOrderAnimation({onComplete, width});
 
   const handleLayout = (event: LayoutChangeEvent) => {
     setWidth(event.nativeEvent.layout.width);
   };
 
-  const label = completed
+  const label = animation.completed
     ? 'Order placed'
-    : holding
+    : animation.holding
     ? 'Keep holding...'
     : 'Hold to place order';
 
   const labelContent = (foreground = false) => (
     <View style={[styles.labelRow, width ? {width} : null]}>
-      {completed && foreground ? (
-        <Animated.View style={{transform: [{scale: successScale}]}}>
+      {animation.completed && foreground ? (
+        <Animated.View style={{transform: [{scale: animation.successScale}]}}>
           <Check color={colors.background} size={18} strokeWidth={2.8} />
         </Animated.View>
       ) : null}
@@ -265,7 +50,7 @@ export const HoldToOrder = ({onComplete}: Props) => {
         style={[
           styles.label,
           foreground && styles.foregroundLabel,
-          completed && foreground && styles.completedLabel,
+          animation.completed && foreground && styles.completedLabel,
         ]}>
         {label}
       </Text>
@@ -273,7 +58,8 @@ export const HoldToOrder = ({onComplete}: Props) => {
   );
 
   return (
-    <Animated.View style={[styles.container, {transform: [{scale}]}]}>
+    <Animated.View
+      style={[styles.container, {transform: [{scale: animation.scale}]}]}>
       <Pressable
         accessibilityActions={[{name: 'activate', label: 'Place order'}]}
         accessibilityHint="Press and hold until the progress is complete"
@@ -282,12 +68,12 @@ export const HoldToOrder = ({onComplete}: Props) => {
         hitSlop={4}
         onAccessibilityAction={event => {
           if (event.nativeEvent.actionName === 'activate') {
-            finish();
+            animation.finish();
           }
         }}
         onLayout={handleLayout}
-        onPressIn={startHolding}
-        onPressOut={cancelHolding}
+        onPressIn={animation.startHolding}
+        onPressOut={animation.cancelHolding}
         style={styles.track}>
         <View pointerEvents="none" style={styles.baseLabel}>
           {labelContent()}
@@ -297,15 +83,15 @@ export const HoldToOrder = ({onComplete}: Props) => {
           pointerEvents="none"
           style={[
             styles.progressFill,
-            completed && styles.completedFill,
+            animation.completed && styles.completedFill,
             {
-              width: progress.interpolate({
+              width: animation.progress.interpolate({
                 inputRange: [0, 1],
                 outputRange: [0, width],
               }),
             },
           ]}>
-          {!completed ? (
+          {!animation.completed ? (
             <>
               <Svg height="100%" style={styles.gradient} width="100%">
                 <Defs>
@@ -342,10 +128,10 @@ export const HoldToOrder = ({onComplete}: Props) => {
                 style={[
                   styles.shineSweep,
                   {
-                    opacity: glowPulse,
+                    opacity: animation.glowPulse,
                     transform: [
                       {
-                        translateX: shine.interpolate({
+                        translateX: animation.shine.interpolate({
                           inputRange: [0, 1],
                           outputRange: [-76, Math.max(0, width - 10)],
                         }),
@@ -354,18 +140,22 @@ export const HoldToOrder = ({onComplete}: Props) => {
                   },
                 ]}
               />
-              <Animated.View style={[styles.glowHead, {opacity: glowPulse}]} />
+              <Animated.View
+                style={[styles.glowHead, {opacity: animation.glowPulse}]}
+              />
             </>
           ) : (
-            <Animated.View style={[styles.successGlow, {opacity: glowPulse}]} />
+            <Animated.View
+              style={[styles.successGlow, {opacity: animation.glowPulse}]}
+            />
           )}
           {labelContent(true)}
         </Animated.View>
       </Pressable>
-      {ENABLE_PARTICLE_EFFECT && (holding || completed) ? (
+      {HOLD_PARTICLES_ENABLED && (animation.holding || animation.completed) ? (
         <View pointerEvents="none" style={styles.particleField}>
-          {PARTICLES.map((particle, index) => {
-            const particleAnimation = particleProgress[index];
+          {HOLD_PARTICLES.map((particle, index) => {
+            const particleAnimation = animation.particleProgress[index];
 
             return (
               <Animated.View

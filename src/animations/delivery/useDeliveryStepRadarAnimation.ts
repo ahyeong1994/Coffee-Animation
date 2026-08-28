@@ -1,7 +1,11 @@
 import {useEffect, useRef} from 'react';
 import {Animated, Easing} from 'react-native';
 
-/** Creates a repeating radar wave and heartbeat for the active delivery step. */
+/**
+ * Creates a repeating radar wave and heartbeat for the active delivery step.
+ * COPY NOTE: render radarScale/radarOpacity on an absolute ring and dotScale/
+ * dotOpacity on its center. All properties support the native driver.
+ */
 export const useDeliveryStepRadarAnimation = (active: boolean) => {
   const radarProgress = useRef(new Animated.Value(0)).current;
   const heartbeat = useRef(new Animated.Value(0)).current;
@@ -16,6 +20,7 @@ export const useDeliveryStepRadarAnimation = (active: boolean) => {
       return;
     }
 
+    // The outer ring expands once every 1.5s while fading at the edges.
     const radarLoop = Animated.loop(
       Animated.timing(radarProgress, {
         toValue: 1,
@@ -24,6 +29,7 @@ export const useDeliveryStepRadarAnimation = (active: boolean) => {
         useNativeDriver: true,
       }),
     );
+    // A separate loop keeps the center alive without matching the ring exactly.
     const heartbeatLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(heartbeat, {

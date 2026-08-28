@@ -2,7 +2,10 @@ import {useEffect, useRef} from 'react';
 import {Animated, Easing} from 'react-native';
 import {Delivery} from '../../types/app';
 
-/** Animates the delivery bike between Brewing and Arriving checkpoints. */
+/**
+ * Animates a delivery vehicle across three normalized checkpoints.
+ * COPY NOTE: 0, 0.5 and 1 map to the first, middle and final timeline dots.
+ */
 export const useDeliveryVehicleAnimation = (
   status: Delivery['status'],
   trackWidth: number,
@@ -23,6 +26,7 @@ export const useDeliveryVehicleAnimation = (
       return;
     }
 
+    // The short alternating Y/rotation loop imitates movement over a road.
     const bounceLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(bounce, {
@@ -41,6 +45,8 @@ export const useDeliveryVehicleAnimation = (
     );
     bounceLoop.start();
 
+    // Arriving drives from the first to middle point; Delivered is deliberately
+    // static and is placed at the final point immediately above.
     const drive =
       status === 'Arriving'
         ? Animated.timing(travel, {

@@ -17,6 +17,12 @@ type Options = {
  * Controls a panel that expands from a compact notch into a full camera.
  * The returned gesture functions are UI-agnostic and can be connected to any
  * PanResponder, gesture-handler, or imperative ref in another project.
+ *
+ * COPY NOTES
+ * - progress is normalized: 0 means notch, 1 means open camera.
+ * - width/height/radius require useNativeDriver false in animateCamera.
+ * - cameraActive mounts hardware early; controlsEnabled hides controls while
+ *   the slower photo-print close animation is running.
  */
 export const usePullDownCameraAnimation = ({
   screenWidth,
@@ -37,6 +43,7 @@ export const usePullDownCameraAnimation = ({
     screenHeight - 104,
     PULL_DOWN_CAMERA_SIZE.maxHeight,
   );
+  // Clamp drag distance so the gesture feels similar on small and large phones.
   const dragDistance = Math.max(320, Math.min(screenHeight * 0.46, 420));
 
   useEffect(() => {

@@ -26,6 +26,8 @@ export const AnimatedCoffeeCard = ({
   const entryProgress = useRef(new Animated.Value(0)).current;
   const [layout, setLayout] = useState<CardLayout | null>(null);
 
+  // Stagger only the first few cards; large lists should not wait progressively
+  // longer for lower items. Copy this block for a simple list entrance effect.
   useEffect(() => {
     Animated.timing(entryProgress, {
       toValue: 1,
@@ -40,6 +42,8 @@ export const AnimatedCoffeeCard = ({
     setLayout({height, y});
   };
 
+  // centerScroll is the scroll offset where this card sits at screen center.
+  // Every interpolation below shares the same three-point focus range.
   const centerScroll =
     layout && viewportHeight
       ? layout.y + layout.height / 2 - viewportHeight / 2
@@ -60,6 +64,8 @@ export const AnimatedCoffeeCard = ({
     outputRange: [0.58, 1, 0.58],
     extrapolate: 'clamp',
   });
+  // perspective + rotateX creates the strong tilting/depth effect while scale
+  // and opacity visually prioritize the card nearest the viewport center.
   const rotateX = scrollY.interpolate({
     inputRange: focusRange,
     outputRange: ['5deg', '0deg', '-5deg'],

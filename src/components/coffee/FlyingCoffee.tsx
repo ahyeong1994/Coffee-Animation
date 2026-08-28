@@ -14,6 +14,8 @@ export const FlyingCoffee = ({flight, progress}: Props) => {
     return null;
   }
 
+  // X moves toward the cart while Y rises 105px at mid-flight. Together these
+  // independent interpolations form a lightweight quadratic-looking arc.
   const translateX = progress.interpolate({
     inputRange: [0, 0.52, 1],
     outputRange: [
@@ -30,6 +32,7 @@ export const FlyingCoffee = ({flight, progress}: Props) => {
       flight.target.y - flight.start.y,
     ],
   });
+  // Shrink aggressively near arrival so the coffee appears to enter the icon.
   const scale = progress.interpolate({
     inputRange: [0, 0.12, 0.78, 1],
     outputRange: [0.7, 1, 0.66, 0.18],

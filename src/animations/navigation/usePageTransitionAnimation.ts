@@ -1,7 +1,11 @@
 import {DependencyList, useEffect, useRef} from 'react';
 import {Animated, Easing} from 'react-native';
 
-/** Creates a short fade-and-rise transition whenever a page key changes. */
+/**
+ * Creates a short fade-and-rise transition whenever a page key changes.
+ * COPY NOTE: pass stable route keys in dependencies; opacity and translateY can
+ * be attached directly to the page container.
+ */
 export const usePageTransitionAnimation = (dependencies: DependencyList) => {
   const progress = useRef(new Animated.Value(1)).current;
 
