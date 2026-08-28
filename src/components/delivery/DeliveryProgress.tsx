@@ -4,19 +4,22 @@ import {Animated, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {colors} from '../../theme';
 import {Delivery} from '../../types/app';
 import {useDeliveryVehicleAnimation} from '../../animations/delivery/useDeliveryVehicleAnimation';
+import {DeliveryStepDot} from './DeliveryStepDot';
 
 type Props = {
   status: Delivery['status'];
   onChangeStatus: (status: Delivery['status']) => void;
 };
 
-const steps = ['Confirmed', 'Brewing', 'Arriving'];
+const steps = ['Brewing', 'Arriving', 'Delivered'];
 
 /** Renders delivery checkpoints and binds them to the vehicle animation hook. */
 export const DeliveryProgress = ({status, onChangeStatus}: Props) => {
   const [trackWidth, setTrackWidth] = useState(0);
   const vehicle = useDeliveryVehicleAnimation(status, trackWidth);
-  const completeSteps = status === 'Brewing' ? 2 : 3;
+  const completeSteps =
+    status === 'Brewing' ? 1 : status === 'Arriving' ? 2 : 3;
+  const activeStep = status === 'Brewing' ? 0 : status === 'Arriving' ? 1 : -1;
   return (
     <View
       accessibilityLabel={`Delivery progress: ${status}`}
@@ -47,8 +50,9 @@ export const DeliveryProgress = ({status, onChangeStatus}: Props) => {
       <View style={styles.timeline}>
         {steps.map((_, step) => (
           <React.Fragment key={step}>
-            <View
-              style={[styles.dot, step < completeSteps && styles.completeDot]}
+            <DeliveryStepDot
+              active={step === activeStep}
+              complete={step < completeSteps}
             />
             {step < steps.length - 1 ? (
               <View
@@ -62,14 +66,10 @@ export const DeliveryProgress = ({status, onChangeStatus}: Props) => {
         ))}
       </View>
       <View style={styles.timelineLabels}>
-        <Text style={[styles.timelineLabel, styles.completeLabel]}>
-          Confirmed
-        </Text>
         <TouchableOpacity
           accessibilityLabel="Set delivery status to Brewing"
           accessibilityRole="button"
           accessibilityState={{selected: status === 'Brewing'}}
-          disabled={!vehicle.active}
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
           onPress={() => onChangeStatus('Brewing')}>
           <Text
@@ -81,24 +81,33 @@ export const DeliveryProgress = ({status, onChangeStatus}: Props) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          accessibilityLabel={
-            status === 'Arriving'
-              ? 'Mark delivery as Delivered'
-              : 'Set delivery status to Arriving'
-          }
+          accessibilityLabel="Set delivery status to Arriving"
           accessibilityRole="button"
           accessibilityState={{selected: status === 'Arriving'}}
           disabled={!vehicle.active}
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
-          onPress={() =>
-            onChangeStatus(status === 'Arriving' ? 'Delivered' : 'Arriving')
-          }>
+          onPress={() => onChangeStatus('Arriving')}>
           <Text
             style={[
               styles.timelineLabel,
-              status !== 'Brewing' && styles.selectedLabel,
+              status === 'Arriving' && styles.selectedLabel,
             ]}>
-            {status === 'Delivered' ? 'Delivered' : 'Arriving'}
+            Arriving
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          accessibilityLabel="Mark delivery as Delivered"
+          accessibilityRole="button"
+          accessibilityState={{selected: status === 'Delivered'}}
+          disabled={status === 'Delivered'}
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+          onPress={() => onChangeStatus('Delivered')}>
+          <Text
+            style={[
+              styles.timelineLabel,
+              status === 'Delivered' && styles.completeLabel,
+            ]}>
+            Delivered
           </Text>
         </TouchableOpacity>
       </View>
@@ -129,14 +138,6 @@ const styles = StyleSheet.create({
   },
   deliveredVehicle: {backgroundColor: colors.elevated, shadowOpacity: 0},
   timeline: {flexDirection: 'row', alignItems: 'center'},
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: colors.border,
-  },
-  completeDot: {backgroundColor: colors.gold, borderColor: colors.gold},
   line: {height: 1, flex: 1, backgroundColor: colors.border},
   completeLine: {backgroundColor: colors.gold},
   timelineLabels: {

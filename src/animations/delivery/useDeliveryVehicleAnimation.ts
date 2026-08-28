@@ -14,7 +14,9 @@ export const useDeliveryVehicleAnimation = (
   useEffect(() => {
     travel.stopAnimation();
     bounce.stopAnimation();
-    travel.setValue(status === 'Brewing' ? 0 : 1);
+    const destination =
+      status === 'Brewing' ? 0 : status === 'Arriving' ? 0.5 : 1;
+    travel.setValue(destination);
     bounce.setValue(0);
 
     if (!active) {
@@ -42,7 +44,7 @@ export const useDeliveryVehicleAnimation = (
     const drive =
       status === 'Arriving'
         ? Animated.timing(travel, {
-            toValue: 1,
+            toValue: destination,
             duration: 1250,
             easing: Easing.inOut(Easing.cubic),
             useNativeDriver: true,
@@ -51,12 +53,8 @@ export const useDeliveryVehicleAnimation = (
 
     if (drive) {
       travel.setValue(0);
-      drive.start(({finished}) => {
-        if (finished) {
-          bounceLoop.stop();
-          bounce.setValue(0);
-        }
-      });
+      // Keep the bike bouncing after it reaches Arriving to show live progress.
+      drive.start();
     }
 
     return () => {
@@ -65,14 +63,15 @@ export const useDeliveryVehicleAnimation = (
     };
   }, [active, bounce, status, travel]);
 
-  const firstStop = Math.max(0, trackWidth / 2 - 5);
+  const firstStop = 0;
+  const middleStop = Math.max(0, trackWidth / 2 - 5);
   const finalStop = Math.max(0, trackWidth - 10);
 
   return {
     active,
     translateX: travel.interpolate({
-      inputRange: [0, 1],
-      outputRange: [firstStop, finalStop],
+      inputRange: [0, 0.5, 1],
+      outputRange: [firstStop, middleStop, finalStop],
     }),
     translateY: bounce.interpolate({
       inputRange: [0, 1],
