@@ -1,3 +1,79 @@
+diff --git a/node_modules/react-native/scripts/react_native_pods_utils/script_phases.rb b/node_modules/react-native/scripts/react_native_pods_utils/script_phases.rb
+index eb1accb..cf926fe 100644
+--- a/node_modules/react-native/scripts/react_native_pods_utils/script_phases.rb
++++ b/node_modules/react-native/scripts/react_native_pods_utils/script_phases.rb
+@@ -46,7 +46,7 @@ def get_script_template(react_native_path, export_vars={})
+ 
+         SCRIPT_PHASES_SCRIPT="$RCT_SCRIPT_RN_DIR/scripts/react_native_pods_utils/script_phases.sh"
+         WITH_ENVIRONMENT="$RCT_SCRIPT_RN_DIR/scripts/xcode/with-environment.sh"
+-        /bin/sh -c "$WITH_ENVIRONMENT $SCRIPT_PHASES_SCRIPT"
++        "$WITH_ENVIRONMENT" "$SCRIPT_PHASES_SCRIPT"
+         EOS
+     result = ERB.new(template, trim_mode: '->').result(binding)
+     return result
+diff --git a/node_modules/react-native/ReactCommon/yoga/yoga/YGValue.h b/node_modules/react-native/ReactCommon/yoga/yoga/YGValue.h
+index 5b2d73c..68442cf 100644
+--- a/node_modules/react-native/ReactCommon/yoga/yoga/YGValue.h
++++ b/node_modules/react-native/ReactCommon/yoga/yoga/YGValue.h
+@@ -77,15 +77,15 @@ namespace literals {
+-inline YGValue operator"" _pt(long double value) {
++inline YGValue operator""_pt(long double value) {
+   return YGValue{static_cast<float>(value), YGUnitPoint};
+ }
+-inline YGValue operator"" _pt(unsigned long long value) {
+-  return operator"" _pt(static_cast<long double>(value));
++inline YGValue operator""_pt(unsigned long long value) {
++  return operator""_pt(static_cast<long double>(value));
+ }
+ 
+-inline YGValue operator"" _percent(long double value) {
++inline YGValue operator""_percent(long double value) {
+   return YGValue{static_cast<float>(value), YGUnitPercent};
+ }
+-inline YGValue operator"" _percent(unsigned long long value) {
+-  return operator"" _percent(static_cast<long double>(value));
++inline YGValue operator""_percent(unsigned long long value) {
++  return operator""_percent(static_cast<long double>(value));
+ }
+ 
+ } // namespace literals
+ } // namespace yoga
+ } // namespace facebook
+diff --git a/node_modules/react-native/scripts/react_native_pods_utils/script_phases.sh b/node_modules/react-native/scripts/react_native_pods_utils/script_phases.sh
+index 68d47b0..f909970 100755
+--- a/node_modules/react-native/scripts/react_native_pods_utils/script_phases.sh
++++ b/node_modules/react-native/scripts/react_native_pods_utils/script_phases.sh
+@@ -53,16 +53,13 @@ generateCodegenSchemaFromJavaScript () {
+     SRCS_PATTERN="$RCT_SCRIPT_JS_SRCS_PATTERN"
+     SRCS_DIR="$RCT_SCRIPT_JS_SRCS_DIR"
+     if [ "$SRCS_PATTERN" ]; then
+-        JS_SRCS=$(find "$PODS_TARGET_SRCROOT/$SRCS_DIR" -type f -name "$SRCS_PATTERN" -print0 | xargs -0)
+         echo "$RCT_SCRIPT_FILE_LIST" >> "${SCRIPT_OUTPUT_FILE_0}" 2>&1
++        find "$PODS_TARGET_SRCROOT/$SRCS_DIR" -type f -name "$SRCS_PATTERN" -print0 | \
++            xargs -0 "$NODE_BINARY" "$CODEGEN_CLI_PATH/lib/cli/combine/combine-js-to-schema-cli.js" "$GENERATED_SCHEMA_FILE"
+     else
+-        JS_SRCS="$PODS_TARGET_SRCROOT/$SRCS_DIR"
+         echo "$RCT_SCRIPT_JS_SRCS_DIR" >> "${SCRIPT_OUTPUT_FILE_0}" 2>&1
++        "$NODE_BINARY" "$CODEGEN_CLI_PATH/lib/cli/combine/combine-js-to-schema-cli.js" "$GENERATED_SCHEMA_FILE" "$PODS_TARGET_SRCROOT/$SRCS_DIR"
+     fi
+-
+-    # shellcheck disable=SC2086
+-    # $JS_SRCS not having double quotations is intentional
+-    "$NODE_BINARY" "$CODEGEN_CLI_PATH/lib/cli/combine/combine-js-to-schema-cli.js" "$GENERATED_SCHEMA_FILE" $JS_SRCS
+ }
+ 
+ generateCodegenArtifactsFromSchema () {
+diff --git a/node_modules/react-native/scripts/xcode/with-environment.sh b/node_modules/react-native/scripts/xcode/with-environment.sh
+index f36190e..e2d2bea 100755
+--- a/node_modules/react-native/scripts/xcode/with-environment.sh
++++ b/node_modules/react-native/scripts/xcode/with-environment.sh
+@@ -43,5 +43,5 @@ fi
+ 
+ # Execute argument, if present
+ if [ -n "$1" ]; then
+-  $1
++  "$@"
+ fi
 diff --git a/node_modules/react-native/third-party-podspecs/boost.podspec b/node_modules/react-native/third-party-podspecs/boost.podspec
 index 3d9331c..bbbb738 100644
 --- a/node_modules/react-native/third-party-podspecs/boost.podspec

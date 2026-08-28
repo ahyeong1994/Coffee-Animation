@@ -2,6 +2,7 @@ import React, {useRef, useState} from 'react';
 import {ShoppingCart} from 'lucide-react-native';
 import {
   Animated,
+  Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -25,6 +26,10 @@ type Props = {
   cartCount: number;
   onOpenCart: () => void;
 };
+
+// SafeAreaView already clears the iOS notch. This additional platform spacing
+// controls the visual breathing room beneath it for the sticky header controls.
+const stickyHeaderTop = Platform.select({ios: 70, android: 12, default: 12});
 
 /** Displays the searchable catalog and coordinates add-to-cart animations. */
 export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
@@ -177,7 +182,7 @@ const styles = StyleSheet.create({
   },
   cartButtonContainer: {
     position: 'absolute',
-    top: 12,
+    top: stickyHeaderTop,
     right: spacing.screen,
     zIndex: 20,
     elevation: 8,
@@ -210,7 +215,7 @@ const styles = StyleSheet.create({
   fullSearch: {marginTop: 26},
   stickySearch: {
     position: 'absolute',
-    top: 12,
+    top: stickyHeaderTop,
     left: spacing.screen,
     right: spacing.screen + 54,
     zIndex: 19,
