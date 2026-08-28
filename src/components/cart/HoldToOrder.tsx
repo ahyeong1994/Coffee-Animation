@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import {colors} from '../../theme';
 
-const HOLD_DURATION = 8600;
+const HOLD_DURATION = 4500;
 // Toggle this to compare the hold animation with or without particles.
 const ENABLE_PARTICLE_EFFECT = false;
 const PARTICLE_COLORS = [colors.white, colors.cream, colors.goldSoft];

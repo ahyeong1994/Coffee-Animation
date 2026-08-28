@@ -9,6 +9,7 @@ export const colors = {
   text: '#F7F3ED',
   muted: '#918D87',
   success: '#6DAA7A',
+  cyan: '#35E6D0',
   danger: '#D1776A',
   white: '#FFFFFF',
 };

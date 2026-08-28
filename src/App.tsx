@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {Animated, StyleSheet, View} from 'react-native';
 import {usePageTransitionAnimation} from './animations/navigation/usePageTransitionAnimation';
 import {BottomTabs} from './components/common/BottomTabs';
+import {OrderSuccessOverlay} from './components/cart/OrderSuccessOverlay';
 import {useCoffeeAppState} from './hooks/useCoffeeAppState';
 import {CartScreen} from './screens/CartScreen';
 import {CoffeeCameraScreen} from './screens/CoffeeCameraScreen';
@@ -13,10 +14,31 @@ import {colors} from './theme';
 /** Composes the current page while business state remains inside one hook. */
 const App = (): JSX.Element => {
   const state = useCoffeeAppState();
+  const [orderSuccessVisible, setOrderSuccessVisible] = useState(false);
+  const checkoutInProgressRef = useRef(false);
+  const checkoutRef = useRef(state.checkout);
+  checkoutRef.current = state.checkout;
   const pageTransition = usePageTransitionAnimation([
     state.activeTab,
     state.profileCameraOpen,
   ]);
+
+  /** Starts one shared confirmation flow for both checkout interactions. */
+  const handleCheckoutRequested = useCallback(() => {
+    if (checkoutInProgressRef.current || state.cartCount === 0) {
+      return;
+    }
+
+    checkoutInProgressRef.current = true;
+    setOrderSuccessVisible(true);
+  }, [state.cartCount]);
+
+  /** Creates the delivery only after the success animation has completed. */
+  const handleOrderSuccessComplete = useCallback(() => {
+    checkoutRef.current();
+    setOrderSuccessVisible(false);
+    checkoutInProgressRef.current = false;
+  }, []);
 
   const renderScreen = () => {
     if (state.profileCameraOpen) {
@@ -32,7 +54,7 @@ const App = (): JSX.Element => {
             lines={state.cart}
             onBrowse={() => state.setActiveTab('order')}
             onChangeQuantity={state.changeQuantity}
-            onCheckout={state.checkout}
+            onCheckout={handleCheckoutRequested}
             onRemove={state.removeFromCart}
           />
         );
@@ -74,13 +96,16 @@ const App = (): JSX.Element => {
         ]}>
         {renderScreen()}
       </Animated.View>
-      {!state.profileCameraOpen && (
+      {!state.profileCameraOpen && !orderSuccessVisible && (
         <BottomTabs
           activeTab={state.activeTab}
           cartCount={state.cartCount}
           onChange={state.setActiveTab}
         />
       )}
+      {orderSuccessVisible ? (
+        <OrderSuccessOverlay onComplete={handleOrderSuccessComplete} />
+      ) : null}
     </View>
   );
 };

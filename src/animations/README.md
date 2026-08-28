@@ -30,3 +30,9 @@ keeps animation timing and gesture state separate from screen business logic.
 
 Most hooks return `Animated.Value` or interpolations instead of fixed UI. This
 lets another project keep the behavior while replacing colors and components.
+
+## Refference
+
+1. https://60fps.design/shots/opal-hold-to-leave-button-interaction?ref=uiuxshowcase.com+
+2. https://60fps.design/shots/pico-cam-pull-down-notch-camera-interaction?ref=uiuxshowcase.com+
+3. https://60fps.design/shots/pico-cam-shake-and-swipe-coach-mark-animation?ref=uiuxshowcase.com+
