@@ -40,9 +40,20 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
   const {cartScale, flight, launch, progress} = useCartFlightAnimation();
 
   const handleCoffeeAdd = (coffee: Coffee, origin: Point) => {
-    onAdd(coffee);
-    cartButtonRef.current?.measureInWindow((x, y, width, height) => {
-      launch(coffee, origin, {x: x + width / 2, y: y + height / 2});
+    const cartButton = cartButtonRef.current;
+    if (!cartButton) {
+      onAdd(coffee);
+      return;
+    }
+
+    cartButton.measureInWindow((x, y, width, height) => {
+      launch(
+        coffee,
+        origin,
+        {x: x + width / 2, y: y + height / 2},
+        // Update the cart and its red badge only after the coffee lands.
+        () => onAdd(coffee),
+      );
     });
   };
 

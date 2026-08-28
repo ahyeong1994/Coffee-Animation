@@ -19,6 +19,14 @@ export const useCartFlightAnimation = () => {
   const progress = useRef(new Animated.Value(0)).current;
   const cartScale = useRef(new Animated.Value(1)).current;
   const runningAnimation = useRef<Animated.CompositeAnimation | null>(null);
+  const onArrivalRef = useRef<(() => void) | null>(null);
+
+  /** Commits the pending cart update exactly once when the item arrives. */
+  const finishArrival = useCallback(() => {
+    const onArrival = onArrivalRef.current;
+    onArrivalRef.current = null;
+    onArrival?.();
+  }, []);
 
   const pulseCart = useCallback(() => {
     Animated.sequence([
@@ -38,13 +46,19 @@ export const useCartFlightAnimation = () => {
 
   /** Starts a new flight and safely cancels a previous unfinished one. */
   const launch = useCallback(
-    (coffee: Coffee, start: Point, target: Point) => {
+    (coffee: Coffee, start: Point, target: Point, onArrival?: () => void) => {
       runningAnimation.current?.stop();
+      // Never lose a fast repeated add: settle the interrupted item first.
+      finishArrival();
+      onArrivalRef.current = onArrival ?? null;
       progress.setValue(0);
       setFlight({coffee, start, target});
     },
-    [progress],
+    [finishArrival, progress],
   );
+
+  // Preserve an item if the screen is closed while it is still flying.
+  useEffect(() => finishArrival, [finishArrival]);
 
   useEffect(() => {
     if (!flight) {
@@ -60,13 +74,14 @@ export const useCartFlightAnimation = () => {
     runningAnimation.current = animation;
     animation.start(({finished}) => {
       if (finished) {
+        finishArrival();
         setFlight(null);
         pulseCart();
       }
     });
 
     return () => animation.stop();
-  }, [flight, progress, pulseCart]);
+  }, [finishArrival, flight, progress, pulseCart]);
 
   return {cartScale, flight, launch, progress};
 };
