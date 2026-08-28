@@ -1,5 +1,7 @@
 export type AppTab = 'order' | 'cart' | 'delivery' | 'profile';
 
+export type CheckoutMethod = 'slide' | 'hold';
+
 export type Coffee = {
   id: string;
   name: string;

@@ -51,6 +51,7 @@ const App = (): JSX.Element => {
       case 'cart':
         return (
           <CartScreen
+            checkoutMethod={state.checkoutMethod}
             lines={state.cart}
             onBrowse={() => state.setActiveTab('order')}
             onChangeQuantity={state.changeQuantity}
@@ -68,6 +69,8 @@ const App = (): JSX.Element => {
       case 'profile':
         return (
           <ProfileScreen
+            checkoutMethod={state.checkoutMethod}
+            onChangeCheckoutMethod={state.setCheckoutMethod}
             onOpenCoffeeCamera={() => state.setProfileCameraOpen(true)}
           />
         );

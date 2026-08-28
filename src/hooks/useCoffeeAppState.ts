@@ -1,11 +1,12 @@
 import {useMemo, useState} from 'react';
 import {initialDeliveries} from '../data/coffee';
-import {AppTab, CartLine, Coffee, Delivery} from '../types/app';
+import {AppTab, CartLine, CheckoutMethod, Coffee, Delivery} from '../types/app';
 
 /** Owns the coffee app's cart, delivery, navigation, and checkout state. */
 export const useCoffeeAppState = () => {
   const [activeTab, setActiveTab] = useState<AppTab>('order');
   const [profileCameraOpen, setProfileCameraOpen] = useState(false);
+  const [checkoutMethod, setCheckoutMethod] = useState<CheckoutMethod>('slide');
   const [cart, setCart] = useState<CartLine[]>([]);
   const [deliveries, setDeliveries] = useState<Delivery[]>(initialDeliveries);
 
@@ -79,11 +80,13 @@ export const useCoffeeAppState = () => {
   return {
     activeTab,
     profileCameraOpen,
+    checkoutMethod,
     cart,
     deliveries,
     cartCount,
     setActiveTab,
     setProfileCameraOpen,
+    setCheckoutMethod,
     addToCart,
     changeQuantity,
     removeFromCart,

@@ -14,9 +14,10 @@ import {SwipeableCartItem} from '../components/cart/SwipeableCartItem';
 import {EmptyState} from '../components/common/EmptyState';
 import {QuantityControl} from '../components/common/QuantityControl';
 import {colors, spacing} from '../theme';
-import {CartLine} from '../types/app';
+import {CartLine, CheckoutMethod} from '../types/app';
 
 type Props = {
+  checkoutMethod: CheckoutMethod;
   lines: CartLine[];
   onBrowse: () => void;
   onCheckout: () => void;
@@ -26,6 +27,7 @@ type Props = {
 
 /** Displays editable cart lines and the two experimental checkout controls. */
 export const CartScreen = ({
+  checkoutMethod,
   lines,
   onBrowse,
   onCheckout,
@@ -112,13 +114,11 @@ export const CartScreen = ({
                   ${(subtotal + deliveryFee).toFixed(2)}
                 </Text>
               </View>
-              <SlideToOrder onComplete={onCheckout} />
-              <View style={styles.checkoutDivider}>
-                <View style={styles.checkoutDividerLine} />
-                <Text style={styles.checkoutDividerText}>OR</Text>
-                <View style={styles.checkoutDividerLine} />
-              </View>
-              <HoldToOrder onComplete={onCheckout} />
+              {checkoutMethod === 'slide' ? (
+                <SlideToOrder onComplete={onCheckout} />
+              ) : (
+                <HoldToOrder onComplete={onCheckout} />
+              )}
             </View>
           </>
         )}
@@ -194,18 +194,4 @@ const styles = StyleSheet.create({
   },
   totalLabel: {fontSize: 15, fontWeight: '800', color: colors.text},
   total: {fontSize: 20, fontWeight: '900', color: colors.goldSoft},
-  checkoutDivider: {
-    height: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-  },
-  checkoutDividerLine: {flex: 1, height: 1, backgroundColor: colors.border},
-  checkoutDividerText: {
-    marginHorizontal: 10,
-    fontSize: 8,
-    fontWeight: '900',
-    letterSpacing: 1.4,
-    color: colors.muted,
-  },
 });
