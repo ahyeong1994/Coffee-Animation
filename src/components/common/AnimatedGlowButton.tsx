@@ -141,8 +141,8 @@ export const AnimatedGlowButton = ({label, onPress}: Props) => {
             strokeDasharray={tailDashArray}
             strokeDashoffset={dashOffset}
             strokeLinecap="round"
-            strokeOpacity={0.8}
-            strokeWidth={8}
+            strokeOpacity={1.8}
+            strokeWidth={5}
             width={buttonWidth}
             x={GLOW_PADDING}
             y={GLOW_PADDING}
@@ -157,7 +157,7 @@ export const AnimatedGlowButton = ({label, onPress}: Props) => {
             strokeDashoffset={trailDashOffset}
             strokeLinecap="round"
             strokeOpacity={0.48}
-            strokeWidth={5.5}
+            strokeWidth={3.5}
             width={buttonWidth}
             x={GLOW_PADDING}
             y={GLOW_PADDING}
