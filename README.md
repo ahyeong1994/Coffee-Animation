@@ -1,79 +1,136 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Noir Coffee Mobile Animation
 
-# Getting Started
+这是一个以黑金色视觉为主的 React Native 咖啡订购练习 App。项目重点不是后端或
+真实付款，而是把常见的 mobile interaction 拆成容易阅读、调整和复制的动画模块。
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## App 包含什么
 
-## Step 1: Start the Metro Server
+底部导航目前有四个主要页面：
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+- **Order**：浏览、搜索和筛选咖啡，并将商品加入购物车。
+- **Cart**：修改数量、左滑删除商品，以及 Slide/Hold 两种下单方式。
+- **Delivery**：显示 Brewing、Arriving、Delivered 三个配送阶段。
+- **Profile**：设置咖啡偏好、下单方式，并进入 pull-down camera 页面。
 
-To start Metro, run the following command from the _root_ of your React Native project:
+相机页面包含完整的拍立得流程：下拉打开相机、拍照 loading、照片打印、持续摇动
+显影，以及下拉保存到系统相册。
+
+## Animation 一览
+
+- 商品飞入购物车，并在抵达后更新 cart badge。
+- Coffee card scrolling focus 与金色边框效果。
+- Category selector 滑动与点击反馈。
+- Sticky search：向下滚动后固定在 header。
+- Browse Coffee 圆角边框的反向游走彗星光点。
+- Slide to order 与 Hold to order。
+- 下单成功的青色打勾动画。
+- Delivery 当前阶段的 radar glow 与脚踏车动画。
+- Page transition。
+- Pull-down camera、shutter loading、Polaroid printing。
+- Accelerometer 持续摇动显影，以及照片 pull-to-save。
+
+每个动画的代码入口、component、依赖与复制说明都在
+[Animation learning and reuse guide](src/animations/README.md)。
+
+## 技术与主要依赖
+
+- React Native `0.72.4`
+- React Native Animated
+- React Native Reanimated
+- React Native Vision Camera
+- React Native Sensors
+- React Native SVG
+- Camera Roll
+- Lucide React Native
+
+## 安装
+
+项目使用 npm。Node.js 需要 `16` 或以上版本。
 
 ```bash
-# using npm
-npm start
-
-# OR using Yarn
-yarn start
+npm install
 ```
 
-## Step 2: Start your Application
-
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
+iOS 第一次安装或 native package 有改变时，还需要更新 Pods：
 
 ```bash
-# using npm
+cd ios
+pod install
+cd ..
+```
+
+## 开发运行
+
+先开启 Metro：
+
+```bash
+npm run dev
+```
+
+另开一个 terminal 运行 Android：
+
+```bash
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### For iOS
+运行 iOS：
 
 ```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+npx react-native run-ios
 ```
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+也可以直接使用 Android Studio 或打开 `ios/MobileAnimation.xcworkspace`。
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+> 项目路径包含空格。在 terminal 手动进入项目时，请把完整路径放在引号内。
 
-## Step 3: Modifying your App
+## Android Release build
 
-Now that you have successfully run the app, let's modify it.
+```bash
+npm run android:build:dev
+```
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+APK 输出位置：
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+```text
+android/app/build/outputs/apk/release/app-release.apk
+```
 
-## Congratulations! :tada:
+目前 Android 没有配置 Gradle product flavors，也没有 `.env.*` 文件。因此
+`android:build:dev`、`android:build:qa` 和 `android:build:prod` 暂时都会生成相同的
+Release app；script 名称只是为以后加入环境配置预留。
 
-You've successfully run and modified your React Native App. :partying_face:
+Release build 不会在摇动手机时打开 React Native Developer Menu。Debug build 则会，
+这是 React Native 的正常开发行为。
 
-### Now what?
+## Project structure
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+```text
+src/
+├── animations/   可复用的 animation controller、timing 与 interpolation
+├── components/   UI 和 animation renderer
+├── screens/      页面组合与 screen-level interaction
+├── hooks/        Cart、camera 和 photo flow 等业务状态
+├── services/     相册等 native side effect
+├── data/         Coffee 等静态资料
+├── theme/        颜色和共用 design token
+└── types/        Shared TypeScript types
+```
 
-# Troubleshooting
+动画应该优先从 `src/animations/index.ts` import。只有在修改特定动画内部实现时，才直接
+引用子目录文件。
 
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## Quality checks
 
-# Learn More
+```bash
+npm run lint
+npx tsc --noEmit
+npm test -- --runInBand
+```
 
-To learn more about React Native, take a look at the following resources:
+## Native package 注意事项
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+安装或移除 camera、sensor、Reanimated 等 native package 后，Fast Refresh 不足以加载
+改变，需要重新 build app。iOS 还要再次执行 `pod install`。
+
+Accelerometer 和真实相机功能必须使用 real device 测试；simulator/emulator 无法完整
+还原实际摇动与拍摄体验。

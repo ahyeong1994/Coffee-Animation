@@ -1,7 +1,8 @@
 import React from 'react';
 import {type LucideIcon} from 'lucide-react-native';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import {colors} from '../../theme';
+import {AnimatedGlowButton} from './AnimatedGlowButton';
 
 type Props = {
   Icon: LucideIcon;
@@ -19,9 +20,7 @@ export const EmptyState = ({Icon, title, message, action, onAction}: Props) => (
     <Text style={styles.title}>{title}</Text>
     <Text style={styles.message}>{message}</Text>
     {action && onAction ? (
-      <TouchableOpacity onPress={onAction} style={styles.button}>
-        <Text style={styles.buttonText}>{action}</Text>
-      </TouchableOpacity>
+      <AnimatedGlowButton label={action} onPress={onAction} />
     ) : null}
   </View>
 );
@@ -52,14 +51,4 @@ const styles = StyleSheet.create({
     color: colors.muted,
     marginTop: 8,
   },
-  button: {
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.gold,
-    paddingHorizontal: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  buttonText: {fontSize: 12, fontWeight: '900', color: colors.background},
 });
