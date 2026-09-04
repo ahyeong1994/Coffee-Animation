@@ -12,6 +12,7 @@ import {HoldToOrder} from '../components/cart/HoldToOrder';
 import {SlideToOrder} from '../components/cart/SlideToOrder';
 import {SwipeableCartItem} from '../components/cart/SwipeableCartItem';
 import {EmptyState} from '../components/common/EmptyState';
+import {AnimatedCoffeeIcon} from '../components/common/AnimatedCoffeeIcon';
 import {QuantityControl} from '../components/common/QuantityControl';
 import {colors, spacing} from '../theme';
 import {CartLine, CheckoutMethod} from '../types/app';
@@ -52,6 +53,13 @@ export const CartScreen = ({
           <EmptyState
             Icon={Coffee}
             action="Browse coffee"
+            animatedIcon={
+              <AnimatedCoffeeIcon
+                color={colors.gold}
+                size={32}
+                strokeWidth={1.6}
+              />
+            }
             message="Your cart is waiting for something exceptional."
             onAction={onBrowse}
             title="Your cart is empty"

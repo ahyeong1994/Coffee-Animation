@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {type ReactNode} from 'react';
 import {type LucideIcon} from 'lucide-react-native';
 import {StyleSheet, Text, View} from 'react-native';
 import {colors} from '../../theme';
@@ -9,13 +9,21 @@ type Props = {
   title: string;
   message: string;
   action?: string;
+  animatedIcon?: ReactNode;
   onAction?: () => void;
 };
 
-export const EmptyState = ({Icon, title, message, action, onAction}: Props) => (
+export const EmptyState = ({
+  Icon,
+  title,
+  message,
+  action,
+  animatedIcon,
+  onAction,
+}: Props) => (
   <View style={styles.container}>
     <View style={styles.symbolWrap}>
-      <Icon color={colors.gold} size={32} strokeWidth={1.6} />
+      {animatedIcon ?? <Icon color={colors.gold} size={32} strokeWidth={1.6} />}
     </View>
     <Text style={styles.title}>{title}</Text>
     <Text style={styles.message}>{message}</Text>

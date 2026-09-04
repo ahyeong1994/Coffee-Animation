@@ -30,16 +30,17 @@ import {
 
 ### Order 与 Cart
 
-| Animation           | Copy starting point                             | Also copy / use with                                       |
-| ------------------- | ----------------------------------------------- | ---------------------------------------------------------- |
-| Cart flying queue   | `animations/cart/useCartFlightAnimation.ts`     | `components/coffee/FlyingCoffee.tsx`                       |
-| Coffee card focus   | `components/coffee/AnimatedCoffeeCard.tsx`      | Animation 在 component 内完成                              |
-| Category indicator  | `components/coffee/CoffeeCategorySelector.tsx`  | Animation 在 component 内完成                              |
-| Sticky search       | `animations/coffee/useStickySearchAnimation.ts` | `screens/OrderScreen.tsx`                                  |
-| Border comet glow   | `components/common/AnimatedGlowButton.tsx`      | Animation 在 component 内完成、SVG                         |
-| Slide to order      | `animations/cart/useSlideToOrderAnimation.ts`   | `components/cart/SlideToOrder.tsx`                         |
-| Hold to order       | `animations/cart/useHoldToOrderAnimation.ts`    | `components/cart/HoldToOrder.tsx`、SVG                     |
-| Order success check | `animations/cart/useOrderSuccessAnimation.ts`   | `components/cart/OrderSuccessOverlay.tsx`、Reanimated、SVG |
+| Animation           | Copy starting point                             | Also copy / use with                                         |
+| ------------------- | ----------------------------------------------- | ------------------------------------------------------------ |
+| Cart flying queue   | `animations/cart/useCartFlightAnimation.ts`     | `components/coffee/FlyingCoffee.tsx`                         |
+| Coffee steam icon   | `components/common/AnimatedCoffeeIcon.tsx`      | `components/common/BottomTabs.tsx`、`screens/CartScreen.tsx` |
+| Coffee card focus   | `components/coffee/AnimatedCoffeeCard.tsx`      | Animation 在 component 内完成                                |
+| Category indicator  | `components/coffee/CoffeeCategorySelector.tsx`  | Animation 在 component 内完成                                |
+| Sticky search       | `animations/coffee/useStickySearchAnimation.ts` | `screens/OrderScreen.tsx`                                    |
+| Border comet glow   | `components/common/AnimatedGlowButton.tsx`      | Animation 在 component 内完成、SVG                           |
+| Slide to order      | `animations/cart/useSlideToOrderAnimation.ts`   | `components/cart/SlideToOrder.tsx`                           |
+| Hold to order       | `animations/cart/useHoldToOrderAnimation.ts`    | `components/cart/HoldToOrder.tsx`、SVG                       |
+| Order success check | `animations/cart/useOrderSuccessAnimation.ts`   | `components/cart/OrderSuccessOverlay.tsx`、Reanimated、SVG   |
 
 表格路径全部以 `src/` 为起点。
 
@@ -118,7 +119,31 @@ src/components/common/AnimatedGlowButton.tsx
 - `dashOffset.outputRange`：目前使用 `[0, -perimeter]`；交换正负号可以改变
   绕行方向，但也要同步调整三层 dash 的对齐方式。
 
-### 3. Slide to order
+### 3. Coffee steam icon
+
+复制：
+
+```text
+src/components/common/AnimatedCoffeeIcon.tsx
+```
+
+这个 component 保留 Lucide Coffee 原本的杯身 SVG path，只把上方三条 steam stroke 拆成
+独立的 `Animated.View`。每条蒸汽会错峰向上移动、轻微左右漂移并淡出，因此小尺寸 tab
+icon 和较大的 empty-state icon 都不会失去原本轮廓。
+
+```tsx
+<AnimatedCoffeeIcon color={colors.gold} size={32} strokeWidth={1.6} />
+```
+
+主要调整参数：
+
+- `STEAM_RISE_DURATION`：一条蒸汽完成上浮的时间。
+- `STEAM_STAGGER`：三条蒸汽开始动画的间隔。
+- `STEAM_DRIFT`：每条蒸汽往左右漂移的方向和距离比例。
+- `translateY` 的 `-size * 0.26`：蒸汽往上飘的高度。
+- `opacity.outputRange`：蒸汽出现和消失的节奏。
+
+### 4. Slide to order
 
 复制：
 
@@ -137,7 +162,7 @@ const animation = useSlideToOrderAnimation({maxTravel, onComplete});
 
 完成条件定义在 hook：滑过 `78%`，或滑过 `58%` 且速度高于 `0.9`。
 
-### 4. Hold to order
+### 5. Hold to order
 
 复制：
 
@@ -150,7 +175,7 @@ src/components/cart/HoldToOrder.tsx
 将 `startHolding` 接到 `onPressIn`，`cancelHolding` 接到 `onPressOut`。默认需要持续按住
 `4500ms`。`HOLD_PARTICLES_ENABLED` 控制 shining particles 是否运行。
 
-### 5. Order success check
+### 6. Order success check
 
 复制：
 
@@ -163,7 +188,7 @@ src/components/cart/OrderSuccessOverlay.tsx
 `react-native-reanimated` 与 `react-native-svg`，并确保 Reanimated Babel plugin 是
 `babel.config.js` 的最后一个 plugin。
 
-### 6. Delivery radar
+### 7. Delivery radar
 
 复制：
 
@@ -185,7 +210,7 @@ const radar = useDeliveryStepRadarAnimation(isCurrentStep);
 
 当 `active=false` 时，hook 会停止并清理 loop；Delivered 阶段因此不会继续发光。
 
-### 7. Pull-down camera
+### 8. Pull-down camera
 
 复制：
 
@@ -200,7 +225,7 @@ src/components/profile/camera/PullDownCameraContent.tsx
 
 如果需要真实拍照，还要复制相机 permission/capture 部分，并安装 Vision Camera。
 
-### 8. Polaroid print 与摇动显影
+### 9. Polaroid print 与摇动显影
 
 完整 flow 建议一起复制：
 

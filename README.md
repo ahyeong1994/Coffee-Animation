@@ -19,6 +19,7 @@
 
 - 商品飞入购物车，并在抵达后更新 cart badge。
 - Coffee card scrolling focus 与金色边框效果。
+- Order tab 与 empty state 的咖啡蒸汽上浮动画。
 - Category selector 滑动与点击反馈。
 - Sticky search：向下滚动后固定在 header。
 - Browse Coffee 圆角边框的反向游走彗星光点。

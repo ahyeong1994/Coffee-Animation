@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   Bike,
-  Coffee,
   ShoppingBag,
   UserRound,
   type LucideIcon,
@@ -15,6 +14,7 @@ import {
 } from 'react-native';
 import {colors} from '../../theme';
 import {AppTab} from '../../types/app';
+import {AnimatedCoffeeIcon} from './AnimatedCoffeeIcon';
 
 type Props = {
   activeTab: AppTab;
@@ -22,8 +22,8 @@ type Props = {
   onChange: (tab: AppTab) => void;
 };
 
-const tabs: {id: AppTab; label: string; Icon: LucideIcon}[] = [
-  {id: 'order', label: 'Order', Icon: Coffee},
+const tabs: {id: AppTab; label: string; Icon?: LucideIcon}[] = [
+  {id: 'order', label: 'Order'},
   {id: 'cart', label: 'Cart', Icon: ShoppingBag},
   {id: 'delivery', label: 'Delivery', Icon: Bike},
   {id: 'profile', label: 'Profile', Icon: UserRound},
@@ -49,11 +49,19 @@ export const BottomTabs = ({activeTab, cartCount, onChange}: Props) => (
                 style={[styles.iconFrame, active && styles.activeIconFrame]}>
                 <View
                   style={[styles.iconInner, active && styles.activeIconInner]}>
-                  <Icon
-                    color={active ? colors.background : colors.muted}
-                    size={18}
-                    strokeWidth={active ? 2.3 : 1.7}
-                  />
+                  {tab.id === 'order' ? (
+                    <AnimatedCoffeeIcon
+                      color={active ? colors.background : colors.muted}
+                      size={18}
+                      strokeWidth={active ? 2.3 : 1.7}
+                    />
+                  ) : Icon ? (
+                    <Icon
+                      color={active ? colors.background : colors.muted}
+                      size={18}
+                      strokeWidth={active ? 2.3 : 1.7}
+                    />
+                  ) : null}
                 </View>
               </View>
               {tab.id === 'cart' && cartCount > 0 ? (

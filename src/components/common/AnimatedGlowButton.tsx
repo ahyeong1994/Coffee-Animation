@@ -17,13 +17,17 @@ type Props = {
 };
 
 const BUTTON_HEIGHT = 44;
+// A capsule uses half its height as the corner radius.
 const BORDER_RADIUS = BUTTON_HEIGHT / 2;
+// Extra SVG space prevents the thick glow stroke from being clipped.
 const GLOW_PADDING = 7;
 // Three overlapping round-capped dashes form a comet: dim long tail, brighter
 // short trail, and a white one-pixel head.
 const COMET_TAIL_LENGTH = 46;
 const COMET_TRAIL_LENGTH = 20;
 const COMET_HEAD_LENGTH = 1;
+// React Native Animated cannot animate a normal SVG Rect directly. Wrapping it
+// creates an Animated component whose strokeDashoffset accepts Animated.Value.
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 /**
@@ -33,9 +37,12 @@ const AnimatedRect = Animated.createAnimatedComponent(Rect);
  */
 export const AnimatedGlowButton = ({label, onPress}: Props) => {
   const [buttonWidth, setButtonWidth] = useState(0);
+  // One normalized timeline drives every comet layer: 0 = starting point,
+  // 1 = one complete lap around the button.
   const borderTravel = useRef(new Animated.Value(0)).current;
 
-  // Approximate the perimeter of a capsule: two straight edges plus one circle.
+  // Capsule perimeter = two straight edges + two semicircles (one full circle).
+  // We need the real perimeter so the dash finishes exactly one seamless lap.
   const perimeter = useMemo(
     () =>
       buttonWidth > 0
@@ -50,26 +57,32 @@ export const AnimatedGlowButton = ({label, onPress}: Props) => {
     }
 
     borderTravel.setValue(0);
+    // Linear easing keeps the comet speed constant around straight edges/corners.
     const loop = Animated.loop(
       Animated.timing(borderTravel, {
         toValue: 1,
         duration: 2200,
         easing: Easing.linear,
+        // strokeDashoffset is an SVG prop, not a native transform/opacity style.
         useNativeDriver: false,
       }),
     );
     loop.start();
 
+    // Always stop infinite loops when the component unmounts.
     return () => loop.stop();
   }, [borderTravel, buttonWidth]);
 
   const handleLayout = ({nativeEvent}: LayoutChangeEvent) => {
+    // Button text controls its width, so measure first instead of hardcoding it.
     const nextWidth = Math.round(nativeEvent.layout.width);
     setButtonWidth(current => (current === nextWidth ? current : nextWidth));
   };
 
   const dashOffset = borderTravel.interpolate({
     inputRange: [0, 1],
+    // Negative perimeter makes the dash move forward along the SVG path.
+    // Change this to positive to reverse the travelling direction.
     outputRange: [0, -perimeter],
   });
   // The comet now travels in the path's forward direction. Offset the shorter
@@ -84,6 +97,7 @@ export const AnimatedGlowButton = ({label, onPress}: Props) => {
     COMET_TAIL_LENGTH - COMET_HEAD_LENGTH,
   );
   const createDashArray = (length: number) =>
+    // One visible dash followed by an invisible gap filling the remaining lap.
     `${length} ${Math.max(1, perimeter - length)}`;
   const tailDashArray = createDashArray(COMET_TAIL_LENGTH);
   const trailDashArray = createDashArray(COMET_TRAIL_LENGTH);
@@ -106,6 +120,7 @@ export const AnimatedGlowButton = ({label, onPress}: Props) => {
           pointerEvents="none"
           style={styles.glowCanvas}
           width={buttonWidth + GLOW_PADDING * 2}>
+          {/* Static border: keeps the original button outline always visible. */}
           <Rect
             fill="none"
             height={BUTTON_HEIGHT}
@@ -117,6 +132,7 @@ export const AnimatedGlowButton = ({label, onPress}: Props) => {
             x={GLOW_PADDING}
             y={GLOW_PADDING}
           />
+          {/* Long tail: widest and softest layer of the comet. */}
           <AnimatedRect
             fill="none"
             height={BUTTON_HEIGHT}
@@ -131,6 +147,7 @@ export const AnimatedGlowButton = ({label, onPress}: Props) => {
             x={GLOW_PADDING}
             y={GLOW_PADDING}
           />
+          {/* Inner trail: shorter stroke adds brightness near the comet head. */}
           <AnimatedRect
             fill="none"
             height={BUTTON_HEIGHT}
@@ -145,6 +162,7 @@ export const AnimatedGlowButton = ({label, onPress}: Props) => {
             x={GLOW_PADDING}
             y={GLOW_PADDING}
           />
+          {/* Head: a one-unit round-capped dash appears as a bright white dot. */}
           <AnimatedRect
             fill="none"
             height={BUTTON_HEIGHT}
