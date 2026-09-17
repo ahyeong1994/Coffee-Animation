@@ -5,7 +5,6 @@ import {
   Pressable,
   SafeAreaView,
   StatusBar,
-  StyleSheet,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -17,6 +16,7 @@ import {
   type PullDownCoffeeCameraHandle,
 } from '../components/profile/PullDownCoffeeCamera';
 import {POLAROID_PRINT_LAYOUT, useCoffeePhotoFlow} from '../animations/camera';
+import {coffeeCameraScreenStyles as styles} from '../styles/screens';
 import {colors, spacing} from '../theme';
 
 type Props = {onBack: () => void};
@@ -104,32 +104,3 @@ export const CoffeeCameraScreen = ({onBack}: Props) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  screen: {flex: 1, backgroundColor: colors.background},
-  safeArea: {flex: 1},
-  header: {
-    height: 68,
-    paddingHorizontal: spacing.screen,
-    flexDirection: 'row',
-    alignItems: 'center',
-    zIndex: 12,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backButtonPressed: {transform: [{scale: 0.93}], opacity: 0.75},
-  content: {
-    flex: 1,
-    paddingHorizontal: spacing.screen,
-    paddingTop: 62,
-    alignItems: 'center',
-  },
-});

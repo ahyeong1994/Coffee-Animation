@@ -11,14 +11,14 @@ import {
   SafeAreaView,
   ScrollView,
   StatusBar,
-  StyleSheet,
   Switch,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import {CoffeePreferencesDropdown} from '../components/profile/CoffeePreferencesDropdown';
-import {colors, spacing} from '../theme';
+import {profileScreenStyles as styles} from '../styles/screens';
+import {colors} from '../theme';
 import {CheckoutMethod} from '../types/app';
 
 const menuItems: {Icon: LucideIcon; label: string; value: string}[] = [
@@ -138,91 +138,3 @@ export const ProfileScreen = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  screen: {flex: 1, backgroundColor: colors.background},
-  safeArea: {flex: 1},
-  content: {paddingBottom: 30},
-  header: {
-    paddingHorizontal: spacing.screen,
-    paddingTop: 12,
-    paddingBottom: 22,
-  },
-  eyebrow: {
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 2.1,
-    color: colors.gold,
-  },
-  title: {fontSize: 31, fontWeight: '800', color: colors.text, marginTop: 7},
-  profileCard: {
-    minHeight: 108,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.gold,
-    backgroundColor: colors.surface,
-    marginHorizontal: spacing.screen,
-    padding: 17,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {fontSize: 15, fontWeight: '900', color: colors.background},
-  profileCopy: {flex: 1, marginLeft: 14},
-  name: {fontSize: 17, fontWeight: '800', color: colors.text},
-  member: {
-    fontSize: 8,
-    fontWeight: '900',
-    letterSpacing: 0.8,
-    color: colors.gold,
-    marginTop: 6,
-  },
-  menu: {
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    marginHorizontal: spacing.screen,
-    marginTop: 18,
-    overflow: 'hidden',
-  },
-  menuRow: {
-    minHeight: 64,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-    paddingHorizontal: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.elevated,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuLabel: {
-    flex: 1,
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.text,
-    marginLeft: 12,
-  },
-  menuValue: {fontSize: 9, color: colors.muted, marginRight: 8},
-  quote: {
-    marginHorizontal: 30,
-    marginTop: 30,
-    textAlign: 'center',
-    fontSize: 10,
-    fontStyle: 'italic',
-    color: colors.muted,
-  },
-});

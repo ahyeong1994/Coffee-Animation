@@ -1,16 +1,10 @@
 import React from 'react';
 import {PackageOpen} from 'lucide-react-native';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {SafeAreaView, ScrollView, StatusBar, Text, View} from 'react-native';
 import {EmptyState} from '../components/common/EmptyState';
 import {DeliveryProgress} from '../components/delivery/DeliveryProgress';
-import {colors, spacing} from '../theme';
+import {deliveryScreenStyles as styles} from '../styles/screens';
+import {colors} from '../theme';
 import {Delivery} from '../types/app';
 
 type Props = {
@@ -70,59 +64,3 @@ export const DeliveryScreen = ({deliveries, onChangeStatus}: Props) => (
     </SafeAreaView>
   </View>
 );
-
-const styles = StyleSheet.create({
-  screen: {flex: 1, backgroundColor: colors.background},
-  safeArea: {flex: 1},
-  header: {
-    paddingHorizontal: spacing.screen,
-    paddingTop: 12,
-    paddingBottom: 22,
-  },
-  eyebrow: {
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 2.1,
-    color: colors.gold,
-  },
-  title: {fontSize: 31, fontWeight: '800', color: colors.text, marginTop: 7},
-  list: {paddingHorizontal: spacing.screen, paddingBottom: 30},
-  card: {
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    padding: 20,
-    marginBottom: 14,
-  },
-  activeCard: {borderColor: colors.gold},
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  orderId: {
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 1.2,
-    color: colors.muted,
-  },
-  statusPill: {
-    height: 25,
-    borderRadius: 13,
-    backgroundColor: colors.elevated,
-    paddingHorizontal: 10,
-    justifyContent: 'center',
-  },
-  activePill: {backgroundColor: '#25382A'},
-  status: {fontSize: 9, fontWeight: '800', color: colors.muted},
-  activeStatus: {color: '#91CF9D'},
-  deliveryTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.text,
-    marginTop: 18,
-  },
-  address: {fontSize: 10, color: colors.muted, marginTop: 5},
-  eta: {fontSize: 10, fontWeight: '800', color: colors.goldSoft, marginTop: 22},
-});

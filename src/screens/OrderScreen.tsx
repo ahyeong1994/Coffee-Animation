@@ -2,10 +2,8 @@ import React, {useRef, useState} from 'react';
 import {ShoppingCart} from 'lucide-react-native';
 import {
   Animated,
-  Platform,
   SafeAreaView,
   StatusBar,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -18,7 +16,8 @@ import {CoffeeSearchField} from '../components/coffee/CoffeeSearchField';
 import {FlyingCoffee} from '../components/coffee/FlyingCoffee';
 import {coffeeCategories} from '../data/coffee';
 import {useCoffeeCatalog} from '../hooks/useCoffeeCatalog';
-import {colors, spacing} from '../theme';
+import {orderScreenStyles as styles} from '../styles/screens';
+import {colors} from '../theme';
 import {Coffee} from '../types/app';
 
 type Props = {
@@ -27,10 +26,6 @@ type Props = {
   onOpenDetail: (coffee: Coffee) => void;
   onOpenCart: () => void;
 };
-
-// SafeAreaView already clears the iOS notch. This additional platform spacing
-// controls the visual breathing room beneath it for the sticky header controls.
-const stickyHeaderTop = Platform.select({ios: 70, android: 12, default: 12});
 
 /** Displays the searchable catalog and coordinates add-to-cart animations. */
 export const OrderScreen = ({
@@ -171,86 +166,3 @@ export const OrderScreen = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  screen: {flex: 1, backgroundColor: colors.background},
-  safeArea: {flex: 1},
-  content: {
-    paddingHorizontal: spacing.screen,
-    paddingTop: 12,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-  eyebrow: {
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 2.2,
-    color: colors.gold,
-  },
-  title: {
-    fontSize: 31,
-    lineHeight: 35,
-    fontWeight: '700',
-    letterSpacing: -0.8,
-    color: colors.text,
-    marginTop: 8,
-  },
-  cartButtonContainer: {
-    position: 'absolute',
-    top: stickyHeaderTop,
-    right: spacing.screen,
-    zIndex: 20,
-    elevation: 8,
-  },
-  cartButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: colors.gold,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cartBadge: {
-    position: 'absolute',
-    top: -5,
-    right: -5,
-    minWidth: 19,
-    height: 19,
-    borderRadius: 10,
-    paddingHorizontal: 4,
-    backgroundColor: colors.danger,
-    borderWidth: 2,
-    borderColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cartBadgeText: {fontSize: 9, fontWeight: '900', color: colors.white},
-  fullSearch: {marginTop: 26},
-  stickySearch: {
-    position: 'absolute',
-    top: stickyHeaderTop,
-    left: spacing.screen,
-    right: spacing.screen + 54,
-    zIndex: 19,
-    elevation: 7,
-  },
-  listHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    marginBottom: 13,
-  },
-  listTitle: {fontSize: 19, fontWeight: '800', color: colors.text},
-  count: {fontSize: 9, color: colors.muted},
-  noResults: {
-    paddingVertical: 80,
-    textAlign: 'center',
-    fontSize: 12,
-    color: colors.muted,
-  },
-});

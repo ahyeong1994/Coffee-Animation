@@ -157,12 +157,16 @@ src/
 ├── animations/   可复用的 animation controller、timing 与 interpolation
 ├── components/   UI 和 animation renderer
 ├── screens/      页面组合与 screen-level interaction
+├── styles/       集中的 page-level StyleSheet（React Native 的 CSS layer）
 ├── hooks/        Cart、camera 和 photo flow 等业务状态
 ├── services/     相册等 native side effect
 ├── data/         Coffee 等静态资料
 ├── theme/        颜色和共用 design token
 └── types/        Shared TypeScript types
 ```
+
+所有 screen 的视觉规则集中在 `src/styles/screens.ts`。可复用 component 仍保留自己的
+colocated StyleSheet，复制 component 或 animation 到其他项目时才不会遗漏必要样式。
 
 动画应该优先从 `src/animations/index.ts` import。只有在修改特定动画内部实现时，才直接
 引用子目录文件。

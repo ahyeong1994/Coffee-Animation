@@ -1,20 +1,14 @@
 import React from 'react';
 import {Coffee} from 'lucide-react-native';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {SafeAreaView, ScrollView, StatusBar, Text, View} from 'react-native';
 import {HoldToOrder} from '../components/cart/HoldToOrder';
 import {SlideToOrder} from '../components/cart/SlideToOrder';
 import {SwipeableCartItem} from '../components/cart/SwipeableCartItem';
 import {EmptyState} from '../components/common/EmptyState';
 import {AnimatedCoffeeIcon} from '../components/common/AnimatedCoffeeIcon';
 import {QuantityControl} from '../components/common/QuantityControl';
-import {colors, spacing} from '../theme';
+import {cartScreenStyles as styles} from '../styles/screens';
+import {colors} from '../theme';
 import {CartLine, CheckoutMethod} from '../types/app';
 
 type Props = {
@@ -142,107 +136,3 @@ export const CartScreen = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  screen: {flex: 1, backgroundColor: colors.background},
-  safeArea: {flex: 1},
-  header: {
-    paddingHorizontal: spacing.screen,
-    paddingTop: 12,
-    paddingBottom: 18,
-  },
-  eyebrow: {
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 2.1,
-    color: colors.gold,
-  },
-  title: {fontSize: 31, fontWeight: '800', color: colors.text, marginTop: 7},
-  list: {paddingHorizontal: spacing.screen, paddingBottom: 16},
-  line: {
-    minHeight: 132,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    padding: 10,
-    flexDirection: 'row',
-  },
-  visual: {
-    width: 102,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  symbol: {fontSize: 38, color: colors.cream},
-  lineCopy: {flex: 1, paddingHorizontal: 13, paddingVertical: 3},
-  lineTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  name: {
-    flex: 1,
-    paddingRight: 8,
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.text,
-  },
-  sizeBadge: {
-    height: 27,
-    minWidth: 58,
-    paddingHorizontal: 8,
-    borderRadius: 9,
-    borderWidth: 1,
-    borderColor: colors.gold,
-    backgroundColor: 'rgba(201,166,107,0.12)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sizeBadgeLabel: {
-    marginRight: 5,
-    fontSize: 7,
-    fontWeight: '900',
-    letterSpacing: 0.8,
-    color: colors.gold,
-  },
-  sizeBadgeValue: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: colors.goldSoft,
-  },
-  subtitle: {fontSize: 9, color: colors.muted, marginTop: 4},
-  lineFooter: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-  },
-  price: {fontSize: 15, fontWeight: '800', color: colors.goldSoft},
-  summary: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    borderTopWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.screen,
-    paddingTop: 18,
-    paddingBottom: 12,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 9,
-  },
-  summaryLabel: {fontSize: 11, color: colors.muted},
-  summaryValue: {fontSize: 11, fontWeight: '700', color: colors.text},
-  totalRow: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-    paddingTop: 12,
-    marginTop: 3,
-  },
-  totalLabel: {fontSize: 15, fontWeight: '800', color: colors.text},
-  total: {fontSize: 20, fontWeight: '900', color: colors.goldSoft},
-});
