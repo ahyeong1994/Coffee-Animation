@@ -24,6 +24,7 @@ import {Coffee} from '../types/app';
 type Props = {
   onAdd: (coffee: Coffee) => void;
   cartCount: number;
+  onOpenDetail: (coffee: Coffee) => void;
   onOpenCart: () => void;
 };
 
@@ -32,7 +33,12 @@ type Props = {
 const stickyHeaderTop = Platform.select({ios: 70, android: 12, default: 12});
 
 /** Displays the searchable catalog and coordinates add-to-cart animations. */
-export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
+export const OrderScreen = ({
+  onAdd,
+  cartCount,
+  onOpenDetail,
+  onOpenCart,
+}: Props) => {
   const [viewportHeight, setViewportHeight] = useState(0);
   const cartButtonRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null);
   const catalog = useCoffeeCatalog();
@@ -115,6 +121,7 @@ export const OrderScreen = ({onAdd, cartCount, onOpenCart}: Props) => {
               index={index}
               key={`${catalog.category}-${coffee.id}`}
               onAdd={origin => handleCoffeeAdd(coffee, origin)}
+              onPress={() => onOpenDetail(coffee)}
               scrollY={stickySearch.scrollY}
               viewportHeight={viewportHeight}
             />

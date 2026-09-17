@@ -9,6 +9,7 @@ type Props = {
   coffee: Coffee;
   index: number;
   onAdd: (origin: Point) => void;
+  onPress: () => void;
   scrollY: Animated.Value;
   viewportHeight: number;
 };
@@ -20,6 +21,7 @@ export const AnimatedCoffeeCard = ({
   coffee,
   index,
   onAdd,
+  onPress,
   scrollY,
   viewportHeight,
 }: Props) => {
@@ -123,6 +125,7 @@ export const AnimatedCoffeeCard = ({
         <CoffeeCard
           coffee={coffee}
           onAdd={onAdd}
+          onPress={onPress}
           visualParallaxY={
             layout && viewportHeight ? visualParallaxY : undefined
           }

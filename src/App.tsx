@@ -1,19 +1,24 @@
-import React, {useCallback, useRef, useState} from 'react';
-import {Animated, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {Animated, BackHandler, StyleSheet, View} from 'react-native';
 import {usePageTransitionAnimation} from './animations/navigation/usePageTransitionAnimation';
 import {BottomTabs} from './components/common/BottomTabs';
 import {OrderSuccessOverlay} from './components/cart/OrderSuccessOverlay';
 import {useCoffeeAppState} from './hooks/useCoffeeAppState';
 import {CartScreen} from './screens/CartScreen';
 import {CoffeeCameraScreen} from './screens/CoffeeCameraScreen';
+import {CoffeeDetailScreen} from './screens/CoffeeDetailScreen';
 import {DeliveryScreen} from './screens/DeliveryScreen';
 import {OrderScreen} from './screens/OrderScreen';
 import {ProfileScreen} from './screens/ProfileScreen';
 import {colors} from './theme';
+import {Coffee} from './types/app';
 
 /** Composes the current page while business state remains inside one hook. */
 const App = (): JSX.Element => {
   const state = useCoffeeAppState();
+  const {activeTab, profileCameraOpen, setActiveTab, setProfileCameraOpen} =
+    state;
+  const [selectedCoffee, setSelectedCoffee] = useState<Coffee | null>(null);
   const [orderSuccessVisible, setOrderSuccessVisible] = useState(false);
   const checkoutInProgressRef = useRef(false);
   const checkoutRef = useRef(state.checkout);
@@ -21,6 +26,7 @@ const App = (): JSX.Element => {
   const pageTransition = usePageTransitionAnimation([
     state.activeTab,
     state.profileCameraOpen,
+    selectedCoffee?.id,
   ]);
 
   /** Starts one shared confirmation flow for both checkout interactions. */
@@ -40,10 +46,63 @@ const App = (): JSX.Element => {
     checkoutInProgressRef.current = false;
   }, []);
 
+  useEffect(() => {
+    /**
+     * Android hardware back navigation is handled at the app shell so every
+     * custom screen follows one predictable hierarchy. Returning true consumes
+     * the event; the Order root therefore stays open instead of exiting.
+     */
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        if (orderSuccessVisible) {
+          return true;
+        }
+
+        if (profileCameraOpen) {
+          setProfileCameraOpen(false);
+          return true;
+        }
+
+        if (selectedCoffee) {
+          setSelectedCoffee(null);
+          return true;
+        }
+
+        if (activeTab !== 'order') {
+          setActiveTab('order');
+          return true;
+        }
+
+        // Consume Back on the root page so Android does not close the app.
+        return true;
+      },
+    );
+
+    return () => subscription.remove();
+  }, [
+    orderSuccessVisible,
+    selectedCoffee,
+    activeTab,
+    profileCameraOpen,
+    setActiveTab,
+    setProfileCameraOpen,
+  ]);
+
   const renderScreen = () => {
     if (state.profileCameraOpen) {
       return (
         <CoffeeCameraScreen onBack={() => state.setProfileCameraOpen(false)} />
+      );
+    }
+
+    if (selectedCoffee) {
+      return (
+        <CoffeeDetailScreen
+          coffee={selectedCoffee}
+          onAdd={state.addToCart}
+          onBack={() => setSelectedCoffee(null)}
+        />
       );
     }
 
@@ -80,6 +139,7 @@ const App = (): JSX.Element => {
           <OrderScreen
             cartCount={state.cartCount}
             onAdd={state.addToCart}
+            onOpenDetail={setSelectedCoffee}
             onOpenCart={() => state.setActiveTab('cart')}
           />
         );
@@ -89,7 +149,13 @@ const App = (): JSX.Element => {
   return (
     <View style={styles.root}>
       <Animated.View
-        key={state.profileCameraOpen ? 'coffee-camera' : state.activeTab}
+        key={
+          state.profileCameraOpen
+            ? 'coffee-camera'
+            : selectedCoffee
+            ? `coffee-detail-${selectedCoffee.id}`
+            : state.activeTab
+        }
         style={[
           styles.page,
           {
@@ -99,7 +165,7 @@ const App = (): JSX.Element => {
         ]}>
         {renderScreen()}
       </Animated.View>
-      {!state.profileCameraOpen && !orderSuccessVisible && (
+      {!state.profileCameraOpen && !selectedCoffee && !orderSuccessVisible && (
         <BottomTabs
           activeTab={state.activeTab}
           cartCount={state.cartCount}

@@ -1,6 +1,13 @@
 import React from 'react';
 import {Plus, Star} from 'lucide-react-native';
-import {Animated, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Animated,
+  GestureResponderEvent,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {colors} from '../../theme';
 import {Coffee} from '../../types/app';
 import {Point} from '../../animations/cart/useCartFlightAnimation';
@@ -8,21 +15,35 @@ import {Point} from '../../animations/cart/useCartFlightAnimation';
 type Props = {
   coffee: Coffee;
   onAdd: (origin: Point) => void;
+  onPress: () => void;
   visualParallaxY?: Animated.AnimatedInterpolation<number>;
 };
 
-export const CoffeeCard = ({coffee, onAdd, visualParallaxY}: Props) => {
+export const CoffeeCard = ({
+  coffee,
+  onAdd,
+  onPress,
+  visualParallaxY,
+}: Props) => {
   const addButtonRef =
     React.useRef<React.ElementRef<typeof TouchableOpacity>>(null);
 
-  const handleAdd = () => {
+  const handleAdd = (event: GestureResponderEvent) => {
+    // The card opens details, while the nested plus remains a quick-add action.
+    event.stopPropagation();
     addButtonRef.current?.measureInWindow((x, y, width, height) => {
       onAdd({x: x + width / 2, y: y + height / 2});
     });
   };
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      accessibilityHint="Opens coffee details and size selection"
+      accessibilityLabel={`View ${coffee.name}`}
+      accessibilityRole="button"
+      activeOpacity={0.9}
+      onPress={onPress}
+      style={styles.card}>
       <View style={[styles.visual, {backgroundColor: coffee.accent}]}>
         <Animated.View
           style={[
@@ -49,7 +70,10 @@ export const CoffeeCard = ({coffee, onAdd, visualParallaxY}: Props) => {
           <Text style={styles.subtitle}>{coffee.subtitle}</Text>
         </View>
         <View style={styles.footer}>
-          <Text style={styles.price}>${coffee.price.toFixed(2)}</Text>
+          <View>
+            <Text style={styles.from}>FROM</Text>
+            <Text style={styles.price}>${coffee.prices.S.toFixed(2)}</Text>
+          </View>
           <TouchableOpacity
             ref={addButtonRef}
             accessibilityLabel={`Add ${coffee.name} to cart`}
@@ -61,7 +85,7 @@ export const CoffeeCard = ({coffee, onAdd, visualParallaxY}: Props) => {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -127,6 +151,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   price: {fontSize: 17, fontWeight: '800', color: colors.cream},
+  from: {
+    marginBottom: 2,
+    fontSize: 7,
+    fontWeight: '800',
+    letterSpacing: 1.1,
+    color: colors.muted,
+  },
   addButton: {
     width: 42,
     height: 42,

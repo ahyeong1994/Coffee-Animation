@@ -1,6 +1,13 @@
 import {useMemo, useState} from 'react';
 import {initialDeliveries} from '../data/coffee';
-import {AppTab, CartLine, CheckoutMethod, Coffee, Delivery} from '../types/app';
+import {
+  AppTab,
+  CartLine,
+  CheckoutMethod,
+  Coffee,
+  CoffeeSize,
+  Delivery,
+} from '../types/app';
 
 /** Owns the coffee app's cart, delivery, navigation, and checkout state. */
 export const useCoffeeAppState = () => {
@@ -10,26 +17,39 @@ export const useCoffeeAppState = () => {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [deliveries, setDeliveries] = useState<Delivery[]>(initialDeliveries);
 
-  /** Adds a new coffee or increments its existing cart quantity. */
-  const addToCart = (coffee: Coffee) => {
+  /** Adds a size-specific line or increments that exact coffee/size pair. */
+  const addToCart = (coffee: Coffee, size: CoffeeSize = 'M', quantity = 1) => {
+    const lineId = `${coffee.id}:${size}`;
     setCart(current => {
-      const existing = current.find(line => line.coffee.id === coffee.id);
+      const existing = current.find(line => line.id === lineId);
       if (existing) {
         return current.map(line =>
-          line.coffee.id === coffee.id
-            ? {...line, quantity: line.quantity + 1}
+          line.id === lineId
+            ? {
+                ...line,
+                quantity: Math.min(999, line.quantity + quantity),
+              }
             : line,
         );
       }
-      return [...current, {coffee, quantity: 1}];
+      return [
+        ...current,
+        {
+          id: lineId,
+          coffee,
+          size,
+          unitPrice: coffee.prices[size],
+          quantity: Math.max(1, Math.min(quantity, 999)),
+        },
+      ];
     });
   };
 
   /** Applies a user-entered cart quantity while enforcing valid limits. */
-  const changeQuantity = (coffeeId: string, quantity: number) => {
+  const changeQuantity = (lineId: string, quantity: number) => {
     setCart(current =>
       current.map(line =>
-        line.coffee.id === coffeeId
+        line.id === lineId
           ? {...line, quantity: Math.max(1, Math.min(quantity, 999))}
           : line,
       ),
@@ -37,8 +57,8 @@ export const useCoffeeAppState = () => {
   };
 
   /** Removes one product line from the cart. */
-  const removeFromCart = (coffeeId: string) => {
-    setCart(current => current.filter(line => line.coffee.id !== coffeeId));
+  const removeFromCart = (lineId: string) => {
+    setCart(current => current.filter(line => line.id !== lineId));
   };
 
   /** Converts the current cart into a delivery and opens Delivery tab. */

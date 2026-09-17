@@ -22,8 +22,8 @@ type Props = {
   lines: CartLine[];
   onBrowse: () => void;
   onCheckout: () => void;
-  onChangeQuantity: (coffeeId: string, quantity: number) => void;
-  onRemove: (coffeeId: string) => void;
+  onChangeQuantity: (lineId: string, quantity: number) => void;
+  onRemove: (lineId: string) => void;
 };
 
 /** Displays editable cart lines and the two experimental checkout controls. */
@@ -36,7 +36,7 @@ export const CartScreen = ({
   onRemove,
 }: Props) => {
   const subtotal = lines.reduce(
-    (total, line) => total + line.coffee.price * line.quantity,
+    (total, line) => total + line.unitPrice * line.quantity,
     0,
   );
   const deliveryFee = lines.length > 0 ? 1.5 : 0;
@@ -74,8 +74,8 @@ export const CartScreen = ({
               {lines.map(line => (
                 <SwipeableCartItem
                   accessibilityName={line.coffee.name}
-                  key={line.coffee.id}
-                  onRemove={() => onRemove(line.coffee.id)}>
+                  key={line.id}
+                  onRemove={() => onRemove(line.id)}>
                   <View style={styles.line}>
                     <View
                       style={[
@@ -85,17 +85,25 @@ export const CartScreen = ({
                       <Text style={styles.symbol}>{line.coffee.symbol}</Text>
                     </View>
                     <View style={styles.lineCopy}>
-                      <Text style={styles.name}>{line.coffee.name}</Text>
+                      <View style={styles.lineTitleRow}>
+                        <Text numberOfLines={1} style={styles.name}>
+                          {line.coffee.name}
+                        </Text>
+                        <View style={styles.sizeBadge}>
+                          <Text style={styles.sizeBadgeLabel}>SIZE</Text>
+                          <Text style={styles.sizeBadgeValue}>{line.size}</Text>
+                        </View>
+                      </View>
                       <Text style={styles.subtitle}>
                         {line.coffee.subtitle}
                       </Text>
                       <View style={styles.lineFooter}>
                         <Text style={styles.price}>
-                          ${(line.coffee.price * line.quantity).toFixed(2)}
+                          ${(line.unitPrice * line.quantity).toFixed(2)}
                         </Text>
                         <QuantityControl
                           onChange={quantity =>
-                            onChangeQuantity(line.coffee.id, quantity)
+                            onChangeQuantity(line.id, quantity)
                           }
                           value={line.quantity}
                         />
@@ -168,7 +176,42 @@ const styles = StyleSheet.create({
   },
   symbol: {fontSize: 38, color: colors.cream},
   lineCopy: {flex: 1, paddingHorizontal: 13, paddingVertical: 3},
-  name: {fontSize: 16, fontWeight: '800', color: colors.text},
+  lineTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  name: {
+    flex: 1,
+    paddingRight: 8,
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.text,
+  },
+  sizeBadge: {
+    height: 27,
+    minWidth: 58,
+    paddingHorizontal: 8,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: colors.gold,
+    backgroundColor: 'rgba(201,166,107,0.12)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sizeBadgeLabel: {
+    marginRight: 5,
+    fontSize: 7,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    color: colors.gold,
+  },
+  sizeBadgeValue: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: colors.goldSoft,
+  },
   subtitle: {fontSize: 9, color: colors.muted, marginTop: 4},
   lineFooter: {
     flex: 1,

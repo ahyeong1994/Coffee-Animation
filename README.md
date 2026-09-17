@@ -7,7 +7,8 @@
 
 底部导航目前有四个主要页面：
 
-- **Order**：浏览、搜索和筛选咖啡，并将商品加入购物车。
+- **Order**：浏览、搜索和筛选咖啡；点击 card 查看详情与选择 S／M／L，或使用 `+`
+  快速加入默认 M size。
 - **Cart**：修改数量、左滑删除商品，以及 Slide/Hold 两种下单方式。
 - **Delivery**：显示 Brewing、Arriving、Delivered 三个配送阶段。
 - **Profile**：设置咖啡偏好、下单方式，并进入 pull-down camera 页面。
