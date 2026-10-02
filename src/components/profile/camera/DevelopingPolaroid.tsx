@@ -17,6 +17,7 @@ import {
 
 type Props = {
   cardWidth: number;
+  printOriginY: number;
   photoUri: string;
   photoNumber: number;
   photoPhase: PhotoPhase;
@@ -34,6 +35,7 @@ type Props = {
 /** Renders the print, blur, shake hint, discard, and pull-to-save card UI. */
 export const DevelopingPolaroid = ({
   cardWidth,
+  printOriginY,
   photoUri,
   photoNumber,
   photoPhase,
@@ -60,7 +62,9 @@ export const DevelopingPolaroid = ({
   );
 
   return (
-    <View pointerEvents="box-none" style={styles.viewport}>
+    <View
+      pointerEvents="box-none"
+      style={[styles.viewport, {top: printOriginY - 4}]}>
       <Animated.View
         {...panHandlers}
         style={[
@@ -226,9 +230,8 @@ export const DevelopingPolaroid = ({
 const styles = StyleSheet.create({
   viewport: {
     position: 'absolute',
-    // CoffeeCameraScreen's content begins below a 68px header. Moving this
-    // viewport upward places its clipping edge directly under the printer.
-    top: -48,
+    // Keep a small overlap behind the printer so no gap appears while the
+    // paper is ejecting. The platform-safe Y coordinate is supplied at runtime.
     bottom: -20,
     left: 0,
     right: 0,

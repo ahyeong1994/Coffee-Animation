@@ -2,6 +2,7 @@ import React, {forwardRef, useCallback, useImperativeHandle} from 'react';
 import {Camera as CameraIcon} from 'lucide-react-native';
 import {
   Animated,
+  type LayoutChangeEvent,
   Pressable,
   StyleSheet,
   Text,
@@ -18,6 +19,7 @@ import {PullDownCameraContent} from './camera/PullDownCameraContent';
 
 type Props = {
   onCapture: (photoUri: string) => void;
+  onPrinterOriginChange: (originY: number) => void;
   printing: boolean;
   printerWidth: number;
 };
@@ -36,7 +38,7 @@ export type PullDownCoffeeCameraHandle = {
 export const PullDownCoffeeCamera = forwardRef<
   PullDownCoffeeCameraHandle,
   Props
->(({onCapture, printing, printerWidth}, ref) => {
+>(({onCapture, onPrinterOriginChange, printing, printerWidth}, ref) => {
   const {width: screenWidth, height: screenHeight} = useWindowDimensions();
   const panel = usePullDownCameraAnimation({
     screenWidth,
@@ -56,6 +58,18 @@ export const PullDownCoffeeCamera = forwardRef<
     onCapture,
   });
 
+  const handleCameraLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      // The photo is revealed immediately below the collapsed printer body.
+      // Reading the body's real Y coordinate avoids assumptions about iOS
+      // safe-area insets and Android status-bar layout.
+      onPrinterOriginChange(
+        event.nativeEvent.layout.y + PULL_DOWN_CAMERA_SIZE.printerHeight,
+      );
+    },
+    [onPrinterOriginChange],
+  );
+
   useImperativeHandle(
     ref,
     () => ({
@@ -70,6 +84,7 @@ export const PullDownCoffeeCamera = forwardRef<
   return (
     <View pointerEvents="box-none" style={styles.layer}>
       <Animated.View
+        onLayout={handleCameraLayout}
         style={[
           styles.cameraBody,
           {

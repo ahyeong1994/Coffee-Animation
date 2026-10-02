@@ -1,4 +1,4 @@
-import React, {useMemo, useRef} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {ArrowLeft} from 'lucide-react-native';
 import {
   PanResponder,
@@ -25,11 +25,17 @@ type Props = {onBack: () => void};
 export const CoffeeCameraScreen = ({onBack}: Props) => {
   const {width: screenWidth} = useWindowDimensions();
   const cameraController = useRef<PullDownCoffeeCameraHandle>(null);
+  const [printerOriginY, setPrinterOriginY] = useState(24);
   const photoFlow = useCoffeePhotoFlow();
   const polaroidWidth = Math.min(
     (screenWidth - spacing.screen * 2) * POLAROID_PRINT_LAYOUT.widthRatio,
     POLAROID_PRINT_LAYOUT.maxWidth,
   );
+  const handlePrinterOriginChange = useCallback((originY: number) => {
+    setPrinterOriginY(current =>
+      Math.abs(current - originY) < 0.5 ? current : originY,
+    );
+  }, []);
 
   const pagePanResponder = useMemo(
     () =>
@@ -70,31 +76,33 @@ export const CoffeeCameraScreen = ({onBack}: Props) => {
         <PullDownCoffeeCamera
           ref={cameraController}
           onCapture={photoFlow.handleCapture}
+          onPrinterOriginChange={handlePrinterOriginChange}
           printing={photoFlow.photoPhase === 'printing'}
           printerWidth={polaroidWidth}
         />
 
         <View style={styles.content}>
-          {!photoFlow.photoUri ? (
-            <CoffeeCameraEmptyState />
-          ) : (
-            <DevelopingPolaroid
-              arrowBounce={photoFlow.arrowBounce}
-              blurRadius={photoFlow.blurRadius}
-              cardWidth={polaroidWidth}
-              cardShake={photoFlow.cardShake}
-              developProgress={photoFlow.developProgress}
-              onDiscard={photoFlow.discardPhoto}
-              panHandlers={photoFlow.photoPanHandlers}
-              photoNumber={photoFlow.photoNumber}
-              photoPhase={photoFlow.photoPhase}
-              photoProgress={photoFlow.photoProgress}
-              photoPull={photoFlow.photoPull}
-              photoUri={photoFlow.photoUri}
-              shakeProgress={photoFlow.shakeProgress}
-            />
-          )}
+          {!photoFlow.photoUri ? <CoffeeCameraEmptyState /> : null}
         </View>
+
+        {photoFlow.photoUri ? (
+          <DevelopingPolaroid
+            arrowBounce={photoFlow.arrowBounce}
+            blurRadius={photoFlow.blurRadius}
+            cardWidth={polaroidWidth}
+            cardShake={photoFlow.cardShake}
+            developProgress={photoFlow.developProgress}
+            onDiscard={photoFlow.discardPhoto}
+            panHandlers={photoFlow.photoPanHandlers}
+            photoNumber={photoFlow.photoNumber}
+            photoPhase={photoFlow.photoPhase}
+            photoProgress={photoFlow.photoProgress}
+            photoPull={photoFlow.photoPull}
+            photoUri={photoFlow.photoUri}
+            printOriginY={printerOriginY}
+            shakeProgress={photoFlow.shakeProgress}
+          />
+        ) : null}
 
         <PhotoFlowFeedback
           error={photoFlow.saveError}
