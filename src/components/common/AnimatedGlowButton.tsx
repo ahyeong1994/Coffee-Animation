@@ -3,10 +3,9 @@ import {
   Animated,
   Easing,
   LayoutChangeEvent,
+  Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
-  View,
 } from 'react-native';
 import Svg, {Rect} from 'react-native-svg';
 import {colors} from '../../theme';
@@ -104,15 +103,17 @@ export const AnimatedGlowButton = ({label, onPress}: Props) => {
   const headDashArray = createDashArray(COMET_HEAD_LENGTH);
 
   return (
-    <View onLayout={handleLayout} style={styles.container}>
-      <TouchableOpacity
-        accessibilityLabel={label}
-        accessibilityRole="button"
-        activeOpacity={0.76}
-        onPress={onPress}
-        style={styles.button}>
-        <Text style={styles.label}>{label}</Text>
-      </TouchableOpacity>
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      hitSlop={8}
+      onLayout={handleLayout}
+      onPress={onPress}
+      style={({pressed}) => [
+        styles.container,
+        pressed && styles.containerPressed,
+      ]}>
+      <Text style={styles.label}>{label}</Text>
 
       {buttonWidth > 0 ? (
         <Svg
@@ -178,15 +179,13 @@ export const AnimatedGlowButton = ({label, onPress}: Props) => {
           />
         </Svg>
       ) : null}
-    </View>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
-  },
-  button: {
     height: BUTTON_HEIGHT,
     borderRadius: BORDER_RADIUS,
     backgroundColor: colors.gold,
@@ -194,6 +193,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  containerPressed: {opacity: 0.76, transform: [{scale: 0.97}]},
   label: {
     fontSize: 12,
     fontWeight: '900',
