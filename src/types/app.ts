@@ -25,10 +25,23 @@ export type CartLine = {
   quantity: number;
 };
 
+export type DeliveryItem = {
+  id: string;
+  name: string;
+  size: CoffeeSize;
+  unitPrice: number;
+  quantity: number;
+  symbol: string;
+  accent: string;
+};
+
 export type Delivery = {
   id: string;
   title: string;
   status: 'Brewing' | 'Arriving' | 'Delivered';
   eta: string;
   address: string;
+  items: DeliveryItem[];
+  subtotal: number;
+  deliveryFee: number;
 };

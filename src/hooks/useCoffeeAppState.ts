@@ -68,12 +68,27 @@ export const useCoffeeAppState = () => {
     }
 
     const itemCount = cart.reduce((total, line) => total + line.quantity, 0);
+    const subtotal = cart.reduce(
+      (total, line) => total + line.unitPrice * line.quantity,
+      0,
+    );
     const newDelivery: Delivery = {
       id: `CF-${String(Date.now()).slice(-4)}`,
       title: `${itemCount} ${itemCount === 1 ? 'coffee' : 'coffees'}`,
       status: 'Brewing',
       eta: '12–18 min',
       address: 'Home · Kuala Lumpur',
+      items: cart.map(line => ({
+        id: line.id,
+        name: line.coffee.name,
+        size: line.size,
+        unitPrice: line.unitPrice,
+        quantity: line.quantity,
+        symbol: line.coffee.symbol,
+        accent: line.coffee.accent,
+      })),
+      subtotal,
+      deliveryFee: 1.5,
     };
     setDeliveries(current => [newDelivery, ...current]);
     setCart([]);

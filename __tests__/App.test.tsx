@@ -49,7 +49,8 @@ jest.mock('react-native-vision-camera', () => {
 import App from '../src/App';
 import {OrderSummaryModal} from '../src/components/cart/OrderSummaryModal';
 import {AnimatedGlowButton} from '../src/components/common/AnimatedGlowButton';
-import {coffees} from '../src/data/coffee';
+import {coffees, initialDeliveries} from '../src/data/coffee';
+import {DeliveryScreen} from '../src/screens/DeliveryScreen';
 
 // Note: test renderer must be required after react-native.
 import renderer from 'react-test-renderer';
@@ -119,6 +120,39 @@ it('shows cart details before exposing the final order control', () => {
   ).toBeTruthy();
   expect(
     tree.root.findByProps({accessibilityLabel: 'Slide to place order'}),
+  ).toBeTruthy();
+
+  renderer.act(() => {
+    tree.unmount();
+  });
+});
+
+it('opens the saved order information from a delivery card', () => {
+  let tree!: renderer.ReactTestRenderer;
+
+  renderer.act(() => {
+    tree = renderer.create(
+      <DeliveryScreen
+        deliveries={initialDeliveries}
+        onChangeStatus={jest.fn()}
+      />,
+    );
+  });
+  renderer.act(() => {
+    tree.root
+      .findByProps({accessibilityLabel: 'View details for order CF-2408'})
+      .props.onPress();
+  });
+
+  expect(
+    tree.root.findByProps({
+      accessibilityLabel: 'Delivery details for order CF-2408',
+    }),
+  ).toBeTruthy();
+  expect(
+    tree.root.findByProps({
+      accessibilityLabel: 'Velvet Latte, Size M, quantity 2, $11.60',
+    }),
   ).toBeTruthy();
 
   renderer.act(() => {

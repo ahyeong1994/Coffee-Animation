@@ -64,5 +64,18 @@ export const initialDeliveries: Delivery[] = [
     status: 'Delivered',
     eta: '24 Aug · 10:42 AM',
     address: 'Home · Kuala Lumpur',
+    items: [
+      {
+        id: 'velvet-latte:M',
+        name: 'Velvet Latte',
+        size: 'M',
+        unitPrice: 5.8,
+        quantity: 2,
+        symbol: '☕',
+        accent: '#7D563F',
+      },
+    ],
+    subtotal: 11.6,
+    deliveryFee: 1.5,
   },
 ];

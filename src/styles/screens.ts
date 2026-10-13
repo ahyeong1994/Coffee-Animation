@@ -211,6 +211,7 @@ export const deliveryScreenStyles = StyleSheet.create({
     padding: 20,
     marginBottom: 14,
   },
+  cardDetailsButtonPressed: {opacity: 0.72},
   activeCard: {borderColor: colors.gold},
   cardHeader: {
     flexDirection: 'row',
@@ -240,7 +241,17 @@ export const deliveryScreenStyles = StyleSheet.create({
     marginTop: 18,
   },
   address: {fontSize: 10, color: colors.muted, marginTop: 5},
-  eta: {fontSize: 10, fontWeight: '800', color: colors.goldSoft, marginTop: 22},
+  viewDetailsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+  },
+  viewDetailsLabel: {fontSize: 10, fontWeight: '800', color: colors.goldSoft},
+  eta: {fontSize: 10, fontWeight: '800', color: colors.goldSoft, marginTop: 12},
 });
 
 export const profileScreenStyles = StyleSheet.create({
