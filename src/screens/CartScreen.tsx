@@ -1,9 +1,9 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Coffee} from 'lucide-react-native';
 import {SafeAreaView, ScrollView, StatusBar, Text, View} from 'react-native';
-import {HoldToOrder} from '../components/cart/HoldToOrder';
-import {SlideToOrder} from '../components/cart/SlideToOrder';
+import {OrderSummaryModal} from '../components/cart/OrderSummaryModal';
 import {SwipeableCartItem} from '../components/cart/SwipeableCartItem';
+import {AnimatedGlowButton} from '../components/common/AnimatedGlowButton';
 import {EmptyState} from '../components/common/EmptyState';
 import {AnimatedCoffeeIcon} from '../components/common/AnimatedCoffeeIcon';
 import {CoffeeDataLoader} from '../components/common/CoffeeDataLoader';
@@ -31,6 +31,7 @@ export const CartScreen = ({
   onChangeQuantity,
   onRemove,
 }: Props) => {
+  const [summaryVisible, setSummaryVisible] = useState(false);
   const cartData = useCartData(lines);
 
   const subtotal = cartData.lines.reduce(
@@ -38,6 +39,11 @@ export const CartScreen = ({
     0,
   );
   const deliveryFee = cartData.lines.length > 0 ? 1.5 : 0;
+
+  const handleProcessOrder = () => {
+    setSummaryVisible(false);
+    onCheckout();
+  };
 
   return (
     <View style={styles.screen}>
@@ -133,12 +139,20 @@ export const CartScreen = ({
                   ${(subtotal + deliveryFee).toFixed(2)}
                 </Text>
               </View>
-              {checkoutMethod === 'slide' ? (
-                <SlideToOrder onComplete={onCheckout} />
-              ) : (
-                <HoldToOrder onComplete={onCheckout} />
-              )}
+              <AnimatedGlowButton
+                label="Checkout"
+                onPress={() => setSummaryVisible(true)}
+              />
             </View>
+            <OrderSummaryModal
+              checkoutMethod={checkoutMethod}
+              deliveryFee={deliveryFee}
+              lines={cartData.lines}
+              onClose={() => setSummaryVisible(false)}
+              onProcess={handleProcessOrder}
+              subtotal={subtotal}
+              visible={summaryVisible}
+            />
           </>
         )}
       </SafeAreaView>

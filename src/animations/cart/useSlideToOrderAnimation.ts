@@ -102,7 +102,18 @@ export const useSlideToOrderAnimation = ({maxTravel, onComplete}: Options) => {
   const panResponder = useMemo(
     () =>
       PanResponder.create({
+        // Claim the gesture immediately. Inside a Modal (and especially near a
+        // ScrollView), waiting for movement can allow the parent to become the
+        // responder first, leaving the thumb unable to slide.
+        onStartShouldSetPanResponder: () =>
+          !completingRef.current && maxTravel > 0,
+        onStartShouldSetPanResponderCapture: () =>
+          !completingRef.current && maxTravel > 0,
         onMoveShouldSetPanResponder: (_, gesture) =>
+          !completingRef.current &&
+          Math.abs(gesture.dx) > 5 &&
+          Math.abs(gesture.dx) > Math.abs(gesture.dy),
+        onMoveShouldSetPanResponderCapture: (_, gesture) =>
           !completingRef.current &&
           Math.abs(gesture.dx) > 5 &&
           Math.abs(gesture.dx) > Math.abs(gesture.dy),
@@ -121,6 +132,7 @@ export const useSlideToOrderAnimation = ({maxTravel, onComplete}: Options) => {
           animateThumbScale(1);
           reset();
         },
+        onShouldBlockNativeResponder: () => true,
       }),
     [animateThumbScale, finish, maxTravel, reset, translateX],
   );

@@ -47,13 +47,15 @@ jest.mock('react-native-vision-camera', () => {
 });
 
 import App from '../src/App';
+import {OrderSummaryModal} from '../src/components/cart/OrderSummaryModal';
 import {AnimatedGlowButton} from '../src/components/common/AnimatedGlowButton';
+import {coffees} from '../src/data/coffee';
 
 // Note: test renderer must be required after react-native.
 import renderer from 'react-test-renderer';
 
 it('renders correctly', () => {
-  let tree: renderer.ReactTestRenderer;
+  let tree!: renderer.ReactTestRenderer;
 
   renderer.act(() => {
     tree = renderer.create(<App />);
@@ -79,6 +81,45 @@ it('fires the shared empty-state button action', () => {
   });
 
   expect(onPress).toHaveBeenCalledTimes(1);
+
+  renderer.act(() => {
+    tree.unmount();
+  });
+});
+
+it('shows cart details before exposing the final order control', () => {
+  const line = {
+    id: 'velvet-latte:M',
+    coffee: coffees[0],
+    size: 'M' as const,
+    unitPrice: coffees[0].prices.M,
+    quantity: 2,
+  };
+  let tree!: renderer.ReactTestRenderer;
+
+  renderer.act(() => {
+    tree = renderer.create(
+      <OrderSummaryModal
+        checkoutMethod="slide"
+        deliveryFee={1.5}
+        lines={[line]}
+        onClose={jest.fn()}
+        onProcess={jest.fn()}
+        subtotal={11.6}
+        visible
+      />,
+    );
+  });
+
+  expect(tree.root.findByProps({children: 'Order summary'})).toBeTruthy();
+  expect(
+    tree.root.findByProps({
+      accessibilityLabel: 'Velvet Latte, Size M, quantity 2, $11.60',
+    }),
+  ).toBeTruthy();
+  expect(
+    tree.root.findByProps({accessibilityLabel: 'Slide to place order'}),
+  ).toBeTruthy();
 
   renderer.act(() => {
     tree.unmount();
