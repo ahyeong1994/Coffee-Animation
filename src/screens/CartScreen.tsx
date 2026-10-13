@@ -22,7 +22,7 @@ type Props = {
   onRemove: (lineId: string) => void;
 };
 
-/** Displays editable cart lines and the two experimental checkout controls. */
+/** Opens an order review before exposing the selected checkout interaction. */
 export const CartScreen = ({
   checkoutMethod,
   lines,

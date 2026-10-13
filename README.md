@@ -9,12 +9,31 @@
 
 - **Order**：浏览、搜索和筛选咖啡；点击 card 查看详情与选择 S／M／L，或使用 `+`
   快速加入默认 M size。
-- **Cart**：修改数量、左滑删除商品，以及 Slide/Hold 两种下单方式。
-- **Delivery**：显示 Brewing、Arriving、Delivered 三个配送阶段。
+- **Cart**：修改数量、左滑删除商品；点击 Checkout 后先在 Order Summary modal
+  检查商品与金额，再使用 Slide/Hold 完成下单。
+- **Delivery**：显示 Brewing、Arriving、Delivered 三个配送阶段，并可打开
+  Delivery Details modal 查看地址、商品快照与完整金额。
 - **Profile**：设置咖啡偏好、下单方式，并进入 pull-down camera 页面。
 
 相机页面包含完整的拍立得流程：下拉打开相机、拍照 loading、照片打印、持续摇动
 显影，以及下拉保存到系统相册。
+
+主要订购流程如下：
+
+```text
+Order
+  → Cart
+  → Checkout
+  → Order Summary modal
+  → Slide / Hold to process order
+  → Order success animation
+  → Delivery
+  → View delivery details
+```
+
+Cart 在 Checkout 时不会立即建立订单。用户需要先在 Summary modal 检查商品、size、数量、
+delivery fee 与总额，再完成 Profile 中选定的 Slide 或 Hold interaction。成功动画播放完毕后，
+App 才会清空购物车、保存不可变的 delivery order snapshot，并进入 Delivery page。
 
 ## Animation 一览
 
@@ -48,34 +67,34 @@ animation controller 都应该优先从 `src/animations/index.ts` import。
 
 ### Order 与 Cart
 
-| Animation | 建议从这里开始复制 | 搭配文件 / 依赖 |
-| --- | --- | --- |
-| Cart flying queue | `src/animations/cart/useCartFlightAnimation.ts` | `src/components/coffee/FlyingCoffee.tsx` |
-| Coffee steam icon | `src/components/common/AnimatedCoffeeIcon.tsx` | Component 内包含完整动画 |
-| Coffee card focus | `src/components/coffee/AnimatedCoffeeCard.tsx` | Component 内包含完整动画 |
-| Category indicator | `src/components/coffee/CoffeeCategorySelector.tsx` | Component 内包含完整动画 |
-| Sticky search | `src/animations/coffee/useStickySearchAnimation.ts` | `src/screens/OrderScreen.tsx` |
-| Border comet glow | `src/components/common/AnimatedGlowButton.tsx` | React Native SVG |
-| Slide to order | `src/animations/cart/useSlideToOrderAnimation.ts` | `src/components/cart/SlideToOrder.tsx` |
-| Hold to order | `src/animations/cart/useHoldToOrderAnimation.ts` | `src/animations/cart/holdToOrderParticles.ts`、`src/components/cart/HoldToOrder.tsx` |
-| Order success check | `src/animations/cart/useOrderSuccessAnimation.ts` | `src/components/cart/OrderSuccessOverlay.tsx`、Reanimated、SVG |
+| Animation           | 建议从这里开始复制                                  | 搭配文件 / 依赖                                                                      |
+| ------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Cart flying queue   | `src/animations/cart/useCartFlightAnimation.ts`     | `src/components/coffee/FlyingCoffee.tsx`                                             |
+| Coffee steam icon   | `src/components/common/AnimatedCoffeeIcon.tsx`      | Component 内包含完整动画                                                             |
+| Coffee card focus   | `src/components/coffee/AnimatedCoffeeCard.tsx`      | Component 内包含完整动画                                                             |
+| Category indicator  | `src/components/coffee/CoffeeCategorySelector.tsx`  | Component 内包含完整动画                                                             |
+| Sticky search       | `src/animations/coffee/useStickySearchAnimation.ts` | `src/screens/OrderScreen.tsx`                                                        |
+| Border comet glow   | `src/components/common/AnimatedGlowButton.tsx`      | React Native SVG                                                                     |
+| Slide to order      | `src/animations/cart/useSlideToOrderAnimation.ts`   | `src/components/cart/SlideToOrder.tsx`                                               |
+| Hold to order       | `src/animations/cart/useHoldToOrderAnimation.ts`    | `src/animations/cart/holdToOrderParticles.ts`、`src/components/cart/HoldToOrder.tsx` |
+| Order success check | `src/animations/cart/useOrderSuccessAnimation.ts`   | `src/components/cart/OrderSuccessOverlay.tsx`、Reanimated、SVG                       |
 
 ### Delivery 与 Navigation
 
-| Animation | 建议从这里开始复制 | 搭配文件 / 依赖 |
-| --- | --- | --- |
-| Delivery radar | `src/animations/delivery/useDeliveryStepRadarAnimation.ts` | `src/components/delivery/DeliveryStepDot.tsx` |
-| Delivery bike | `src/animations/delivery/useDeliveryVehicleAnimation.ts` | `src/components/delivery/DeliveryProgress.tsx` |
-| Page transition | `src/animations/navigation/usePageTransitionAnimation.ts` | `App.tsx` |
+| Animation       | 建议从这里开始复制                                         | 搭配文件 / 依赖                                |
+| --------------- | ---------------------------------------------------------- | ---------------------------------------------- |
+| Delivery radar  | `src/animations/delivery/useDeliveryStepRadarAnimation.ts` | `src/components/delivery/DeliveryStepDot.tsx`  |
+| Delivery bike   | `src/animations/delivery/useDeliveryVehicleAnimation.ts`   | `src/components/delivery/DeliveryProgress.tsx` |
+| Page transition | `src/animations/navigation/usePageTransitionAnimation.ts`  | `App.tsx`                                      |
 
 ### Camera 与 Polaroid
 
-| Animation | 建议从这里开始复制 | 搭配文件 / 依赖 |
-| --- | --- | --- |
-| Pull-down camera | `src/animations/camera/usePullDownCameraAnimation.ts` | `src/components/profile/PullDownCoffeeCamera.tsx`、Vision Camera |
-| Continuous shake | `src/animations/camera/useContinuousShakeDetection.ts` | `src/components/profile/camera/DevelopingPolaroid.tsx`、React Native Sensors |
-| Photo workflow | `src/hooks/useCoffeePhotoFlow.ts` | `src/screens/CoffeeCameraScreen.tsx`、Camera Roll |
-| Print configuration | `src/animations/camera/photoPrintConfig.ts` | Camera flow 共用参数 |
+| Animation           | 建议从这里开始复制                                     | 搭配文件 / 依赖                                                              |
+| ------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| Pull-down camera    | `src/animations/camera/usePullDownCameraAnimation.ts`  | `src/components/profile/PullDownCoffeeCamera.tsx`、Vision Camera             |
+| Continuous shake    | `src/animations/camera/useContinuousShakeDetection.ts` | `src/components/profile/camera/DevelopingPolaroid.tsx`、React Native Sensors |
+| Photo workflow      | `src/hooks/useCoffeePhotoFlow.ts`                      | `src/screens/CoffeeCameraScreen.tsx`、Camera Roll                            |
+| Print configuration | `src/animations/camera/photoPrintConfig.ts`            | Camera flow 共用参数                                                         |
 
 `useCoffeePhotoFlow.ts` 会串联 printing、shaking、revealing、ready-to-save 和 saving，移植
 拍立得功能时不建议只复制其中一半状态流程。
@@ -215,6 +234,9 @@ interpolation 来改变蒸汽速度、间隔、高度与消失节奏。
 
 ### Slide / Hold to order
 
+两个 interaction 都显示在 `OrderSummaryModal` 内，而不是直接显示在 Cart page。Cart page 的
+Checkout button 只负责打开订单摘要；Slide 或 Hold 完成后才进入 order-success flow。
+
 Slide 版本复制：
 
 ```text
@@ -222,7 +244,8 @@ src/animations/cart/useSlideToOrderAnimation.ts
 src/components/cart/SlideToOrder.tsx
 ```
 
-完成条件位于 hook：滑过 `78%`，或滑过 `58%` 且速度高于 `0.9`。
+完成条件位于 hook：滑过 `78%`，或滑过 `58%` 且速度高于 `0.9`。PanResponder 会在
+thumb track 开始触摸时接管 gesture，避免嵌套 Modal 或 ScrollView 抢走滑动事件。
 
 Hold 版本复制：
 
@@ -257,6 +280,11 @@ src/components/delivery/DeliveryStepDot.tsx
 ```
 
 `active=false` 时 hook 会停止并清理 loop，因此 Delivered 阶段不会继续发光。
+
+Delivery card 的 `View delivery details` 会打开 `DeliveryDetailsModal.tsx`。这个 modal 本身
+不是新的自定义 animation；它读取 checkout 时保存在 `Delivery` record 中的商品与金额快照。
+因此购物车在下单后即使已经清空，历史 delivery 仍能显示正确的 coffee、size、quantity、
+subtotal、delivery fee、total、地址和配送状态。
 
 ### Pull-down camera
 

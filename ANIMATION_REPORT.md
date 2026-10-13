@@ -1,8 +1,8 @@
 # Noir Coffee App — Animation 功能报告
 
-**报告日期：** 2026 年 10 月 2 日  
-**平台：** React Native（Android / iOS）  
-**主题：** 黑金精品咖啡订购体验
+- **报告日期：** 2026 年 10 月 13 日
+- **平台：** React Native（Android / iOS）
+- **主题：** 黑金精品咖啡订购体验
 
 ## 1. Executive summary
 
@@ -74,6 +74,11 @@ Camera / Polaroid 以及页面切换。动画并非单纯装饰，主要用于�
 
 ### B. Cart 与 Checkout
 
+Cart 的产品流程为 `Checkout → Order Summary modal → Slide / Hold → Order success`。
+Order Summary 会先列出商品、size、quantity、subtotal、delivery fee 与 total；只有在这个
+确认层内才会显示用户于 Profile 选定的 Slide 或 Hold interaction。Summary modal 属于流程
+UI，不另外计入自定义 animation 数量。
+
 #### 8. Swipe-to-remove interaction
 
 - **触发方式**：Cart item 向左滑动。
@@ -83,15 +88,16 @@ Camera / Polaroid 以及页面切换。动画并非单纯装饰，主要用于�
 
 #### 9. Slide to place order
 
-- **触发方式**：将 checkout thumb 向右滑到完成区域。
+- **触发方式**：点击 Checkout、检查 Order Summary 后，将 modal 内的 thumb 向右滑到完成区域。
 - **视觉效果**：idle chevrons 循环提示方向；拖动时 thumb 跟随手指；不足 threshold 会弹回，完成时显示确认状态。
 - **目的**：避免误触下单，同时提供具有仪式感的 checkout interaction。
 - **完成条件**：滑过约 `78%`，或滑过约 `58%` 且具备足够滑动速度。
-- **实现**：PanResponder、Animated Value、spring、timing 与 idle arrow loop。
+- **实现**：PanResponder、Animated Value、spring、timing 与 idle arrow loop。手势从 track
+  touch start 开始取得 responder，避免被 Modal 或相邻 ScrollView 拦截。
 
 #### 10. Hold to place order
 
-- **触发方式**：持续按住 checkout button。
+- **触发方式**：点击 Checkout、检查 Order Summary 后，持续按住 modal 内的 process control。
 - **视觉效果**：进度从左向右填满；按钮轻微压缩；金色 gradient、白色 shining band、glow 和大量 particles 同时运行；完成后出现 checkmark。
 - **目的**：作为 Slide Checkout 的另一种可选下单体验。
 - **完成时间**：默认持续按住约 `4.5s`。
@@ -105,6 +111,11 @@ Camera / Polaroid 以及页面切换。动画并非单纯装饰，主要用于�
 - **实现**：React Native Reanimated、SVG strokeDashoffset、spring、sequence、delay 与 repeat。
 
 ### C. Delivery tracking
+
+Order success animation 完成后，App 会保存当次订单的 immutable snapshot，包括商品、size、
+quantity、价格、delivery fee 和地址。Delivery card 的 `View delivery details` 位于进度条与
+日期之间，打开后可在 bottom-sheet modal 查看完整订单资料。这个详情 modal 是辅助理解配送
+story 的流程 UI，不另外计入自定义 animation 数量。
 
 #### 12. Active-step radar glow
 
@@ -199,9 +210,9 @@ Camera / Polaroid 以及页面切换。动画并非单纯装饰，主要用于�
 
 ## 5. 产品层面的重点亮点
 
-1. **双 Checkout Interaction**：用户可在 Profile 选择 Slide 或 Hold 下单方式。
-2. **动作与业务状态同步**：商品飞进 cart 后才增加 badge；成功勾完成后才创建 delivery。
-3. **可视化 Delivery 状态**：radar 与车辆位置让 Brewing / Arriving / Delivered 更直观。
+1. **双 Checkout Interaction**：用户可在 Profile 选择 Slide 或 Hold，下单前先通过 Order Summary 确认内容。
+2. **动作与业务状态同步**：商品飞进 cart 后才增加 badge；成功勾完成后才建立 delivery snapshot。
+3. **可视化 Delivery 状态**：radar 与车辆位置让 Brewing / Arriving / Delivered 更直观，详情 modal 保留完整订单 context。
 4. **完整 Camera Storytelling**：从 pull-down、拍照、打印、摇动显影到保存相册形成连续体验。
 5. **统一黑金视觉语言**：彗星光点、金色 glow、coffee steam 与 Polaroid hardware styling 保持品牌一致。
 
