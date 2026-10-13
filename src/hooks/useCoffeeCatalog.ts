@@ -1,10 +1,37 @@
-import {useMemo, useState} from 'react';
-import {coffees} from '../data/coffee';
+import {useEffect, useMemo, useState} from 'react';
+import {fetchCoffeeCatalog} from '../services/coffeeData';
+import {Coffee} from '../types/app';
 
 /** Owns category/search filters and returns the matching coffee catalog. */
 export const useCoffeeCatalog = () => {
   const [category, setCategory] = useState('All');
   const [query, setQuery] = useState('');
+  const [coffees, setCoffees] = useState<Coffee[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    const controller = new AbortController();
+
+    const load = async () => {
+      try {
+        const loadedCoffees = await fetchCoffeeCatalog(controller.signal);
+        if (active) {
+          setCoffees(loadedCoffees);
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    load();
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, []);
 
   const filteredCoffees = useMemo(
     () =>
@@ -17,12 +44,13 @@ export const useCoffeeCatalog = () => {
           matchesCategory && searchable.includes(query.trim().toLowerCase())
         );
       }),
-    [category, query],
+    [category, coffees, query],
   );
 
   return {
     category,
     query,
+    isLoading,
     filteredCoffees,
     setCategory,
     setQuery,

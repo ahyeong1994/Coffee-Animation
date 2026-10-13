@@ -6,7 +6,9 @@ import {SlideToOrder} from '../components/cart/SlideToOrder';
 import {SwipeableCartItem} from '../components/cart/SwipeableCartItem';
 import {EmptyState} from '../components/common/EmptyState';
 import {AnimatedCoffeeIcon} from '../components/common/AnimatedCoffeeIcon';
+import {CoffeeDataLoader} from '../components/common/CoffeeDataLoader';
 import {QuantityControl} from '../components/common/QuantityControl';
+import {useCartData} from '../hooks/useCartData';
 import {cartScreenStyles as styles} from '../styles/screens';
 import {colors} from '../theme';
 import {CartLine, CheckoutMethod} from '../types/app';
@@ -29,11 +31,13 @@ export const CartScreen = ({
   onChangeQuantity,
   onRemove,
 }: Props) => {
-  const subtotal = lines.reduce(
+  const cartData = useCartData(lines);
+
+  const subtotal = cartData.lines.reduce(
     (total, line) => total + line.unitPrice * line.quantity,
     0,
   );
-  const deliveryFee = lines.length > 0 ? 1.5 : 0;
+  const deliveryFee = cartData.lines.length > 0 ? 1.5 : 0;
 
   return (
     <View style={styles.screen}>
@@ -43,7 +47,12 @@ export const CartScreen = ({
           <Text style={styles.eyebrow}>YOUR SELECTION</Text>
           <Text style={styles.title}>Cart</Text>
         </View>
-        {lines.length === 0 ? (
+        {cartData.isLoading ? (
+          <CoffeeDataLoader
+            message="Preparing your cart…"
+            style={styles.cartLoader}
+          />
+        ) : cartData.lines.length === 0 ? (
           <EmptyState
             Icon={Coffee}
             action="Browse coffee"
@@ -65,7 +74,7 @@ export const CartScreen = ({
               keyboardDismissMode="on-drag"
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}>
-              {lines.map(line => (
+              {cartData.lines.map(line => (
                 <SwipeableCartItem
                   accessibilityName={line.coffee.name}
                   key={line.id}

@@ -75,6 +75,7 @@ export const orderScreenStyles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 13,
   },
+  catalogLoader: {minHeight: 380},
   listTitle: {fontSize: 19, fontWeight: '800', color: colors.text},
   count: {fontSize: 9, color: colors.muted},
   noResults: {
@@ -100,6 +101,7 @@ export const cartScreenStyles = StyleSheet.create({
     color: colors.gold,
   },
   title: {fontSize: 31, fontWeight: '800', color: colors.text, marginTop: 7},
+  cartLoader: {flex: 1, minHeight: 0},
   list: {paddingHorizontal: spacing.screen, paddingBottom: 16},
   line: {
     minHeight: 132,

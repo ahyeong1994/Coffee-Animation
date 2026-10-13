@@ -18,6 +18,18 @@ jest.mock('react-native-sensors', () => ({
   setUpdateIntervalForType: jest.fn(),
 }));
 
+jest.mock('lottie-react-native', () => {
+  const ReactModule = require('react');
+  const {View} = require('react-native');
+
+  return {
+    __esModule: true,
+    default: ReactModule.forwardRef(
+      (props: object, ref: React.Ref<unknown>) => <View {...props} ref={ref} />,
+    ),
+  };
+});
+
 jest.mock('react-native-vision-camera', () => {
   const ReactModule = require('react');
   const {View} = require('react-native');

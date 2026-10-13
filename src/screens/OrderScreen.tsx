@@ -14,6 +14,7 @@ import {AnimatedCoffeeCard} from '../components/coffee/AnimatedCoffeeCard';
 import {CoffeeCategorySelector} from '../components/coffee/CoffeeCategorySelector';
 import {CoffeeSearchField} from '../components/coffee/CoffeeSearchField';
 import {FlyingCoffee} from '../components/coffee/FlyingCoffee';
+import {CoffeeDataLoader} from '../components/common/CoffeeDataLoader';
 import {coffeeCategories} from '../data/coffee';
 import {useCoffeeCatalog} from '../hooks/useCoffeeCatalog';
 import {orderScreenStyles as styles} from '../styles/screens';
@@ -104,24 +105,34 @@ export const OrderScreen = ({
           <View style={styles.listHeader}>
             <Text style={styles.listTitle}>Our coffee</Text>
             <Text style={styles.count}>
-              {catalog.filteredCoffees.length}{' '}
-              {catalog.filteredCoffees.length === 1
-                ? 'selection'
-                : 'selections'}
+              {catalog.isLoading
+                ? 'Loading…'
+                : `${catalog.filteredCoffees.length} ${
+                    catalog.filteredCoffees.length === 1
+                      ? 'selection'
+                      : 'selections'
+                  }`}
             </Text>
           </View>
-          {catalog.filteredCoffees.map((coffee, index) => (
-            <AnimatedCoffeeCard
-              coffee={coffee}
-              index={index}
-              key={`${catalog.category}-${coffee.id}`}
-              onAdd={origin => handleCoffeeAdd(coffee, origin)}
-              onPress={() => onOpenDetail(coffee)}
-              scrollY={stickySearch.scrollY}
-              viewportHeight={viewportHeight}
+          {catalog.isLoading ? (
+            <CoffeeDataLoader
+              message="Brewing the coffee menu…"
+              style={styles.catalogLoader}
             />
-          ))}
-          {catalog.filteredCoffees.length === 0 ? (
+          ) : (
+            catalog.filteredCoffees.map((coffee, index) => (
+              <AnimatedCoffeeCard
+                coffee={coffee}
+                index={index}
+                key={`${catalog.category}-${coffee.id}`}
+                onAdd={origin => handleCoffeeAdd(coffee, origin)}
+                onPress={() => onOpenDetail(coffee)}
+                scrollY={stickySearch.scrollY}
+                viewportHeight={viewportHeight}
+              />
+            ))
+          )}
+          {!catalog.isLoading && catalog.filteredCoffees.length === 0 ? (
             <Text style={styles.noResults}>No coffee matches your search.</Text>
           ) : null}
         </Animated.ScrollView>
